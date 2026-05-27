@@ -70,7 +70,7 @@ def discover():
 
 @discover_bp.route('/discover/like/<target_user_id>', methods=['POST'])
 def like_profile(target_user_id):
-    """Lajkni profil"""
+    """Lajkni profil (zachova filtry)"""
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('auth.login'))
@@ -81,7 +81,17 @@ def like_profile(target_user_id):
 
     Connection.create(user_id, target_user_id)
     flash("❤️ Profil se ti líbí!", "success")
-    return redirect(url_for('discover.discover'))
+
+    # Zachov filtry
+    min_nerd = request.form.get('min_nerd', 0, type=int)
+    max_nerd = request.form.get('max_nerd', 10, type=int)
+    interests = request.form.getlist('interests')
+
+    url = url_for('discover.discover', min_nerd=min_nerd, max_nerd=max_nerd)
+    if interests:
+        url += f"&{'&'.join([f'interests={i}' for i in interests])}"
+
+    return redirect(url)
 
 @discover_bp.route('/discover/skip', methods=['POST'])
 def skip_profile():
