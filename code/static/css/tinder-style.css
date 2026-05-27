@@ -1,0 +1,387 @@
+/* 🔥 NerdMatch Tinder-Style Design 🔥 */
+
+:root {
+    --primary-color: #ff6b6b;
+    --success-color: #51cf66;
+    --nerd-purple: #7c3aed;
+    --dark-bg: #1a1a2e;
+    --card-bg: #16213e;
+}
+
+body {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #0f3460 100%);
+    min-height: 100vh;
+}
+
+/* Filter Section */
+.filter-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    display: none;
+}
+
+.filter-section.open {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-toggle-btn {
+    background: linear-gradient(135deg, var(--nerd-purple), var(--primary-color));
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+}
+
+.filter-toggle-btn:hover {
+    transform: scale(1.05);
+    color: white;
+}
+
+/* Card Stack Animation */
+.card-stack-container {
+    perspective: 1000px;
+    min-height: 600px;
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.tinder-card {
+    background: linear-gradient(135deg, rgba(122, 81, 178, 0.9), rgba(142, 68, 173, 0.9));
+    border-radius: 25px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    color: white;
+    position: absolute;
+    width: 100%;
+    transition: all 0.3s ease;
+    cursor: grab;
+    user-select: none;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.tinder-card:hover {
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+}
+
+.tinder-card.dragging {
+    cursor: grabbing;
+    box-shadow: 0 30px 80px rgba(255, 107, 107, 0.5);
+}
+
+.tinder-card.swipe-left {
+    animation: swipeLeft 0.5s ease-out forwards;
+}
+
+.tinder-card.swipe-right {
+    animation: swipeRight 0.5s ease-out forwards;
+}
+
+@keyframes swipeLeft {
+    to {
+        transform: translateX(-150%) rotate(-20deg);
+        opacity: 0;
+    }
+}
+
+@keyframes swipeRight {
+    to {
+        transform: translateX(150%) rotate(20deg);
+        opacity: 0;
+    }
+}
+
+/* Profile Avatar */
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--nerd-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Profile Header */
+.profile-header {
+    margin-bottom: 30px;
+}
+
+.profile-name {
+    font-size: 36px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.profile-nerd-level {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.nerd-level-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.nerd-level-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Profile Bio */
+.profile-bio {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 8px;
+}
+
+.profile-bio-empty {
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+/* Tags Section */
+.tags-section {
+    margin: 20px 0;
+}
+
+.tags-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.tag.interest {
+    background: rgba(255, 107, 107, 0.3);
+    border-color: rgba(255, 107, 107, 0.5);
+}
+
+.tag.technology {
+    background: rgba(81, 207, 102, 0.3);
+    border-color: rgba(81, 207, 102, 0.5);
+}
+
+.tags-empty {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-action {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    font-size: 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-skip {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.8), rgba(255, 80, 80, 0.8));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-skip:hover {
+    background: linear-gradient(135deg, rgba(255, 107, 107, 1), rgba(255, 80, 80, 1));
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+}
+
+.btn-like {
+    background: linear-gradient(135deg, rgba(81, 207, 102, 0.8), rgba(34, 197, 94, 0.8));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-like:hover {
+    background: linear-gradient(135deg, rgba(81, 207, 102, 1), rgba(34, 197, 94, 1));
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(81, 207, 102, 0.4);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-state-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.empty-state-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+/* Match Notification */
+.match-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, var(--primary-color), var(--nerd-purple));
+    color: white;
+    padding: 40px;
+    border-radius: 30px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    animation: matchPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: none;
+}
+
+.match-notification.show {
+    display: block;
+}
+
+@keyframes matchPop {
+    0% {
+        transform: translate(-50%, -50%) scale(0.3) rotate(-180deg);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1) rotate(10deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.match-notification-title {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.match-notification-text {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.match-notification-emoji {
+    font-size: 100px;
+    animation: spin 2s linear infinite;
+    margin: 20px 0;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .tinder-card {
+        padding: 25px;
+        min-height: 500px;
+    }
+
+    .profile-name {
+        font-size: 28px;
+    }
+
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 36px;
+    }
+
+    .action-buttons {
+        gap: 10px;
+    }
+
+    .btn-action {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+
+    .filter-section {
+        padding: 15px;
+    }
+}
