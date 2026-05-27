@@ -36,8 +36,10 @@ def setup():
         nickname = request.form.get('nickname', '').strip()
         bio = request.form.get('bio', '').strip()
         nerd_level = request.form.get('nerd_level', 5)
-        interests = request.form.getlist('interests')
-        technologies = request.form.getlist('technologies')
+        interests_str = request.form.get('interests', '').strip()
+        technologies_str = request.form.get('technologies', '').strip()
+        interests = [i.strip() for i in interests_str.split(',') if i.strip()]
+        technologies = [t.strip() for t in technologies_str.split(',') if t.strip()]
 
         # Validace
         nickname_valid, nickname_error = validate_nickname(nickname)
@@ -68,10 +70,11 @@ def setup():
         # Vytvoř profil
         profile = Profile.create(user_id, nickname, bio, nerd_level)
         if profile:
-            # Přidej zájmy a technologie
-            if interests:
-                for interest in interests:
-                    session_db = session
+            # Vytvoř custom zájmy a technologie (pokud neexistují)
+            for interest in interests:
+                Profile.create_interest_if_not_exists(interest, user_id)
+            for tech in technologies:
+                Profile.create_technology_if_not_exists(tech, user_id)
 
             # Aktualizuj s zájmy a technologiemi
             Profile.update(user_id, nickname, bio, nerd_level, interests, technologies)
@@ -100,8 +103,10 @@ def edit():
         nickname = request.form.get('nickname', '').strip()
         bio = request.form.get('bio', '').strip()
         nerd_level = request.form.get('nerd_level', 5)
-        interests = request.form.getlist('interests')
-        technologies = request.form.getlist('technologies')
+        interests_str = request.form.get('interests', '').strip()
+        technologies_str = request.form.get('technologies', '').strip()
+        interests = [i.strip() for i in interests_str.split(',') if i.strip()]
+        technologies = [t.strip() for t in technologies_str.split(',') if t.strip()]
 
         # Validace
         nickname_valid, nickname_error = validate_nickname(nickname)
@@ -128,6 +133,12 @@ def edit():
                 nerd_level = 5
         except:
             nerd_level = 5
+
+        # Vytvoř custom zájmy a technologie (pokud neexistují)
+        for interest in interests:
+            Profile.create_interest_if_not_exists(interest, user_id)
+        for tech in technologies:
+            Profile.create_technology_if_not_exists(tech, user_id)
 
         # Aktualizuj profil
         result = Profile.update(user_id, nickname, bio, nerd_level, interests, technologies)

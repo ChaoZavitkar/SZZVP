@@ -143,23 +143,77 @@ class Profile:
             return None
 
     @staticmethod
-    def get_all_interests():
-        """Vrať všechny dostupné zájmy"""
+    def create_interest_if_not_exists(name: str, user_id: str):
+        """Vytvoř custom zájmi (nebo vrať existující)"""
+        db = get_db()
+        try:
+            result = db.execute('''
+                MERGE (i:InterestCategory {name: $name})
+                ON CREATE SET
+                    i.type = "USER",
+                    i.created_by = $user_id,
+                    i.created_at = datetime()
+                RETURN i.name as name, i.type as type
+            ''', name=name, user_id=user_id)
+            return result[0] if result else None
+        except Exception as e:
+            print(f"Error creating interest: {e}")
+            return None
+
+    @staticmethod
+    def create_technology_if_not_exists(name: str, user_id: str):
+        """Vytvoř custom technologii (nebo vrať existující)"""
+        db = get_db()
+        try:
+            result = db.execute('''
+                MERGE (t:Technology {name: $name})
+                ON CREATE SET
+                    t.created_by = $user_id,
+                    t.created_at = datetime(),
+                    t.category = "USER"
+                RETURN t.name as name
+            ''', name=name, user_id=user_id)
+            return result[0] if result else None
+        except Exception as e:
+            print(f"Error creating technology: {e}")
+            return None
+
+    @staticmethod
+    def get_all_interests(limit_user_tags: int = 5):
+        """Vrať dostupné zájmy (SYSTEM všechny, USER omezené)"""
         db = get_db()
         result = db.query('''
             MATCH (i:InterestCategory)
-            RETURN i.name as name, i.type as type
-            ORDER BY i.type DESC, i.name ASC
+            RETURN i.name as name, i.type as type, i.created_at as created_at
+            ORDER BY
+                CASE WHEN i.type = "SYSTEM" THEN 0 ELSE 1 END ASC,
+                i.name ASC,
+                i.created_at DESC
         ''')
-        return result
+
+        # Rozděleme na SYSTEM a USER, limitujeme USER
+        system_interests = [r for r in result if r['type'] == 'SYSTEM']
+        user_interests = [r for r in result if r['type'] == 'USER'][:limit_user_tags]
+
+        return system_interests + user_interests
 
     @staticmethod
-    def get_all_technologies():
-        """Vrať všechny dostupné technologie"""
+    def get_all_technologies(limit_user_tags: int = 5):
+        """Vrať dostupné technologie (SYSTEM všechny, USER omezené)"""
         db = get_db()
         result = db.query('''
             MATCH (t:Technology)
-            RETURN t.name as name, t.category as category
-            ORDER BY t.category ASC, t.name ASC
+            WHERE t.category IS NOT NULL
+            RETURN t.name as name, t.category as category, t.created_at as created_at
+            ORDER BY
+                CASE WHEN t.category = "USER" THEN 1 ELSE 0 END ASC,
+                t.category ASC,
+                t.name ASC,
+                t.created_at DESC
         ''')
-        return result
+
+        # Rozděleme na SYSTEM a USER, limitujeme USER
+        system_techs = [r for r in result if r['category'] != 'USER']
+        user_techs = [r for r in result if r['category'] == 'USER'][:limit_user_tags]
+
+        return system_techs + user_techs

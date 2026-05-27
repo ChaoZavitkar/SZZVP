@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "main",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["code/app.py"],
+      "port": 5000,
+      "autoPort": true
+    }
+  ]
+}
