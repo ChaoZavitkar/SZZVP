@@ -1,5 +1,6 @@
 """NerdMatch - Hlavní Flask aplikace"""
 
+import os
 from flask import Flask, render_template, session, redirect, url_for
 from config import Config
 from models.database import init_db, get_db
@@ -13,11 +14,35 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 # Inicializuj databázi
+import sys
 try:
     init_db(app)
-    print("✅ Databáze inicializována")
+    print("✅ Databáze inicializována", flush=True)
 except Exception as e:
-    print(f"⚠️ Chyba DB: {e}")
+    print(f"⚠️ Chyba DB: {e}", flush=True)
+
+# Inicializuj test data pokud INIT_DB=true (Docker startup)
+if os.getenv('INIT_DB') == 'true':
+    print("📊 Initializing test data...", flush=True)
+    sys.stdout.flush()
+    try:
+        # Import zde aby se vyhnuli circular imports
+        import subprocess
+        result = subprocess.run(['python', 'create_test_profiles.py'],
+                              capture_output=True, text=True, timeout=180)
+        print(result.stdout, flush=True)
+        if result.stderr:
+            print(f"Errors: {result.stderr}", file=sys.stderr, flush=True)
+        if "Vytvořeno 20/20" in result.stdout or "Databáze inicializována" in result.stdout:
+            print("✅ Test data initialized successfully!", flush=True)
+        else:
+            # Profily už existují, to je OK
+            if "Uživatel již existuje" in result.stdout:
+                print("ℹ️  Test data already exists in database", flush=True)
+    except subprocess.TimeoutExpired:
+        print("⚠️ Database initialization timeout", flush=True)
+    except Exception as e:
+        print(f"⚠️ Database initialization error: {e}", flush=True)
 
 # Registruj blueprinty
 app.register_blueprint(auth_bp)
