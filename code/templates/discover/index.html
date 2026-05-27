@@ -5,67 +5,71 @@
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tinder-style.css') }}">
 
-<div class="container py-4">
-    <!-- Header -->
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="font-size: 48px; color: white; margin-bottom: 10px;">🔥 NerdMatch 🔥</h1>
-        <p style="color: rgba(255, 255, 255, 0.7); font-size: 18px;">Swipuj. Matchuj. Zajímej se. Opakuj.</p>
-    </div>
+<!-- Header -->
+<div style="text-align: center; margin-bottom: 30px; padding: 20px;">
+    <h1 style="font-size: 48px; color: white; margin-bottom: 10px;">🔥 NerdMatch 🔥</h1>
+    <p style="color: rgba(255, 255, 255, 0.7); font-size: 16px;">Swipuj. Matchuj. Zajímej se. Opakuj.</p>
+</div>
 
-    <!-- Filter Toggle Button -->
-    <div style="text-align: center; margin-bottom: 20px;">
-        <button class="filter-toggle-btn">⬆️ Zobrazit filtr</button>
-    </div>
-
-    <!-- Filter Section -->
+<!-- Main Container: Left (Filters) + Right (Profile) -->
+<div class="discover-container">
+    <!-- LEFT: Filter Section -->
     <div class="filter-section">
-        <h5 style="color: white; margin-bottom: 20px;">⚙️ Filtr - Najdi si svůj typ nerda</h5>
-        <form method="GET" class="row g-3">
-            <div class="col-md-6">
-                <label for="min_nerd" class="form-label" style="color: white;">Nerd level od: <span id="min_nerd_val" style="color: var(--primary-color);">{{ min_nerd }}</span></label>
+        <h5>⚙️ Filtr</h5>
+        <form method="GET" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Nerd Level Min -->
+            <div>
+                <label for="min_nerd" style="color: white; font-size: 13px;">Nerd level: <span id="min_nerd_val" style="color: var(--primary-color);">{{ min_nerd }}</span></label>
                 <input type="range" class="form-range" id="min_nerd" name="min_nerd"
                        min="0" max="10" value="{{ min_nerd }}"
-                       oninput="document.getElementById('min_nerd_val').innerText = this.value">
-            </div>
-            <div class="col-md-6">
-                <label for="max_nerd" class="form-label" style="color: white;">Nerd level do: <span id="max_nerd_val" style="color: var(--primary-color);">{{ max_nerd }}</span></label>
-                <input type="range" class="form-range" id="max_nerd" name="max_nerd"
-                       min="0" max="10" value="{{ max_nerd }}"
-                       oninput="document.getElementById('max_nerd_val').innerText = this.value">
+                       oninput="document.getElementById('min_nerd_val').innerText = this.value"
+                       style="width: 100%;">
             </div>
 
-            <div class="col-md-12">
-                <label class="form-label" style="color: white; margin-bottom: 10px;">Zájmy (nepovinné)</label>
-                <div class="row">
+            <!-- Nerd Level Max -->
+            <div>
+                <label for="max_nerd" style="color: white; font-size: 13px;">do: <span id="max_nerd_val" style="color: var(--primary-color);">{{ max_nerd }}</span></label>
+                <input type="range" class="form-range" id="max_nerd" name="max_nerd"
+                       min="0" max="10" value="{{ max_nerd }}"
+                       oninput="document.getElementById('max_nerd_val').innerText = this.value"
+                       style="width: 100%;">
+            </div>
+
+            <!-- Interests -->
+            <div>
+                <label style="color: white; font-size: 13px; display: block; margin-bottom: 8px;">❤️ Zájmy</label>
+                <div style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;">
                     {% for interest in all_interests %}
-                    <div class="col-md-6 mb-2">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="interest_{{ loop.index }}"
-                                   name="interests" value="{{ interest.name }}"
-                                   {% if interest.name in selected_interests %}checked{% endif %}>
-                            <label class="form-check-label" for="interest_{{ loop.index }}" style="color: rgba(255, 255, 255, 0.8);">
-                                {{ interest.name }}
-                            </label>
-                        </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="interest_{{ loop.index }}"
+                               name="interests" value="{{ interest.name }}"
+                               {% if interest.name in selected_interests %}checked{% endif %}>
+                        <label class="form-check-label" for="interest_{{ loop.index }}" style="color: rgba(255, 255, 255, 0.8); font-size: 13px;">
+                            {{ interest.name }}
+                        </label>
                     </div>
                     {% endfor %}
                 </div>
             </div>
 
-            <div class="col-md-12">
-                <button type="submit" class="btn" style="background: linear-gradient(135deg, var(--nerd-purple), var(--primary-color)); color: white; border: none; padding: 10px 20px; border-radius: 20px;">
-                    🔍 Aplikovat filtr
+            <!-- Buttons -->
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button type="submit" class="btn" style="background: linear-gradient(135deg, var(--nerd-purple), var(--primary-color)); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; flex: 1;">
+                    🔍 Filtr
                 </button>
-                <a href="{{ url_for('discover.discover') }}" class="btn" style="background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 10px 20px; border-radius: 20px;">
-                    ↻ Resetovat
+                <a href="{{ url_for('discover.discover') }}" class="btn" style="background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 8px 16px; border-radius: 20px; font-size: 13px; text-decoration: none;">
+                    ↻
                 </a>
             </div>
         </form>
     </div>
 
-    <!-- Card Stack -->
-    {% if profile %}
-    <div class="card-stack-container">
+    <!-- RIGHT: Profile Card -->
+    <div>
+
+        <!-- Card Stack -->
+        {% if profile %}
+        <div class="card-stack-container">
         <div class="tinder-card">
             <!-- Avatar -->
             <div style="display: flex; align-items: flex-start; justify-content: space-between;">
@@ -151,23 +155,24 @@
         </div>
     </div>
 
-    {% else %}
-    <!-- Empty State -->
-    <div class="empty-state">
-        <div class="empty-state-icon">🤷</div>
-        <h2 class="empty-state-title">Zkušeností jsi prošel!</h2>
-        <p class="empty-state-text">
-            Vyčerpal jsi seznam profilů pro tento filtr.<br>
-            Zkus změnit kritéria nebo se vrať později! 😎
-        </p>
-        <a href="{{ url_for('discover.discover') }}" class="btn" style="background: linear-gradient(135deg, var(--nerd-purple), var(--primary-color)); color: white; border: none; padding: 12px 30px; border-radius: 25px;">
-            🔄 Resetovat a zkusit znova
-        </a>
-    </div>
-    {% endif %}
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">🤷</div>
+            <h2 class="empty-state-title">Zkušeností jsi prošel!</h2>
+            <p class="empty-state-text">
+                Vyčerpal jsi seznam profilů pro tento filtr.<br>
+                Zkus změnit kritéria nebo se vrať později! 😎
+            </p>
+            <a href="{{ url_for('discover.discover') }}" class="btn" style="background: linear-gradient(135deg, var(--nerd-purple), var(--primary-color)); color: white; border: none; padding: 12px 30px; border-radius: 25px;">
+                🔄 Resetovat a zkusit znova
+            </a>
+        </div>
+        {% endif %}
 
-    <!-- Match Notification -->
-    <div class="match-notification"></div>
+        <!-- Match Notification -->
+        <div class="match-notification"></div>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/tinder-swipe.js') }}"></script>

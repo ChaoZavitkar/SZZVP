@@ -13,73 +13,63 @@ body {
     min-height: 100vh;
 }
 
-/* Filter Section */
+/* Main Layout Container */
+.discover-container {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Filter Section - LEFT SIDE */
 .filter-section {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 30px;
+    padding: 25px;
     backdrop-filter: blur(10px);
-    display: none;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
 }
 
-.filter-section.open {
-    display: block;
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.filter-section h5 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 .filter-toggle-btn {
-    background: linear-gradient(135deg, var(--nerd-purple), var(--primary-color));
-    border: none;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-bottom: 20px;
-    transition: transform 0.2s;
+    display: none;
 }
 
-.filter-toggle-btn:hover {
-    transform: scale(1.05);
-    color: white;
-}
-
-/* Card Stack Animation */
+/* Card Stack Animation - RIGHT SIDE */
 .card-stack-container {
     perspective: 1000px;
-    min-height: 600px;
+    min-height: 550px;
     position: relative;
-    margin-bottom: 30px;
+    height: 550px;
 }
 
 .tinder-card {
-    background: linear-gradient(135deg, rgba(122, 81, 178, 0.9), rgba(142, 68, 173, 0.9));
+    background: linear-gradient(135deg, rgba(122, 81, 178, 0.95), rgba(142, 68, 173, 0.95));
     border-radius: 25px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    padding: 40px;
+    padding: 30px;
     color: white;
     position: absolute;
     width: 100%;
     transition: all 0.3s ease;
     cursor: grab;
     user-select: none;
-    min-height: 600px;
+    height: 550px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    top: 0;
 }
 
 .tinder-card:hover {
@@ -115,26 +105,26 @@ body {
 
 /* Profile Avatar */
 .profile-avatar {
-    width: 120px;
-    height: 120px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary-color), var(--nerd-purple));
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
+    font-size: 40px;
     font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* Profile Header */
 .profile-header {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .profile-name {
-    font-size: 36px;
+    font-size: 28px;
     font-weight: bold;
     margin: 0;
 }
@@ -142,10 +132,10 @@ body {
 .profile-nerd-level {
     display: inline-block;
     background: rgba(255, 255, 255, 0.2);
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: 20px;
-    font-size: 14px;
-    margin-top: 10px;
+    font-size: 12px;
+    margin-top: 8px;
 }
 
 .nerd-level-bar {
@@ -166,10 +156,10 @@ body {
 
 /* Profile Bio */
 .profile-bio {
-    font-size: 16px;
-    line-height: 1.6;
-    margin: 20px 0;
-    padding: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 15px 0;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.05);
     border-left: 3px solid var(--primary-color);
     border-radius: 8px;
@@ -178,33 +168,34 @@ body {
 .profile-bio-empty {
     color: rgba(255, 255, 255, 0.5);
     font-style: italic;
+    font-size: 13px;
 }
 
 /* Tags Section */
 .tags-section {
-    margin: 20px 0;
+    margin: 12px 0;
 }
 
 .tags-label {
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     display: block;
 }
 
 .tags-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
 }
 
 .tag {
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
     font-weight: 500;
 }
 
@@ -226,17 +217,17 @@ body {
 /* Action Buttons */
 .action-buttons {
     display: flex;
-    gap: 15px;
+    gap: 12px;
     justify-content: center;
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
 .btn-action {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     border: none;
-    font-size: 32px;
+    font-size: 28px;
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -270,31 +261,40 @@ body {
 /* Empty State */
 .empty-state {
     text-align: center;
-    padding: 60px 20px;
+    padding: 40px 20px;
     color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 550px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .empty-state-icon {
-    font-size: 72px;
+    font-size: 60px;
     margin-bottom: 20px;
     animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+    50% { transform: translateY(-15px); }
 }
 
 .empty-state-title {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: bold;
     color: white;
     margin-bottom: 10px;
 }
 
 .empty-state-text {
-    font-size: 16px;
-    margin-bottom: 30px;
+    font-size: 14px;
+    margin-bottom: 25px;
+    max-width: 300px;
 }
 
 /* Match Notification */
@@ -355,20 +355,42 @@ body {
 }
 
 /* Mobile Responsive */
+@media (max-width: 1024px) {
+    .discover-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .filter-section {
+        position: static;
+        margin-bottom: 20px;
+    }
+}
+
 @media (max-width: 768px) {
+    .discover-container {
+        padding: 15px;
+    }
+
     .tinder-card {
-        padding: 25px;
-        min-height: 500px;
+        padding: 20px;
+        height: 450px;
+        min-height: 450px;
+    }
+
+    .card-stack-container {
+        height: 450px;
+        min-height: 450px;
     }
 
     .profile-name {
-        font-size: 28px;
+        font-size: 24px;
     }
 
     .profile-avatar {
-        width: 80px;
-        height: 80px;
-        font-size: 36px;
+        width: 70px;
+        height: 70px;
+        font-size: 32px;
     }
 
     .action-buttons {
@@ -376,8 +398,8 @@ body {
     }
 
     .btn-action {
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         font-size: 24px;
     }
 
