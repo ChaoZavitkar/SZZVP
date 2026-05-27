@@ -1,15 +1,18 @@
 """Validace vstupů (email, heslo, atd.)"""
 
 import re
-from email_validator import validate_email, EmailNotValidError
 
 def validate_email_format(email: str) -> tuple:
-    """Validace formátu emailu"""
-    try:
-        validate_email(email, check_deliverability=False)
-        return True, ""
-    except EmailNotValidError as e:
-        return False, str(e)
+    """Validace emailu - jednoduché regex"""
+    email = email.strip().lower()
+    
+    # Jednoduchý regex na email
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    
+    if not email or not re.match(pattern, email):
+        return False, "Neplatný email"
+    
+    return True, ""
 
 
 def validate_password(password: str) -> tuple:

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Editovat profil - NerdMatch{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">Editovat profil</h1>
+
+                <form method="POST" class="mt-4">
+                    <div class="mb-3">
+                        <label for="nickname" class="form-label">Přezdívka *</label>
+                        <input type="text" class="form-control" id="nickname" name="nickname"
+                               placeholder="Vaše přezdívka (3-50 znaků)"
+                               value="{{ profile.nickname or '' }}" required>
+                        <small class="form-text text-muted">Bude viditelná ostatním uživatelům</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">O sobě</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="4"
+                                  placeholder="Řekněte nám něco o sobě (max. 500 znaků)">{{ profile.bio or '' }}</textarea>
+                        <small class="form-text text-muted">Nepovinné, max. 500 znaků</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nerd_level" class="form-label">Úroveň nerdství: <span id="nerd_value">{{ profile.nerd_level or 5 }}</span>/10</label>
+                        <input type="range" class="form-range" id="nerd_level" name="nerd_level"
+                               min="0" max="10" value="{{ profile.nerd_level or 5 }}"
+                               oninput="document.getElementById('nerd_value').innerText = this.value">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Zájmy * (vyberte alespoň jeden)</label>
+                        <div class="row">
+                            {% for interest in interests %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="interest_{{ loop.index }}"
+                                           name="interests" value="{{ interest.name }}"
+                                           {% if interest.name in (profile.interests or []) %}checked{% endif %}>
+                                    <label class="form-check-label" for="interest_{{ loop.index }}">
+                                        {{ interest.name }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Technologie (volitelné)</label>
+                        <div class="row">
+                            {% for tech in technologies %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="tech_{{ loop.index }}"
+                                           name="technologies" value="{{ tech.name }}"
+                                           {% if tech.name in (profile.technologies or []) %}checked{% endif %}>
+                                    <label class="form-check-label" for="tech_{{ loop.index }}">
+                                        {{ tech.name }}
+                                        <small class="text-muted">({{ tech.category }})</small>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Uložit změny</button>
+                        <a href="{{ url_for('profile.view') }}" class="btn btn-secondary">Zrušit</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

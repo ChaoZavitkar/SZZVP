@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - NerdMatch{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>🚀 Dashboard</h1>
+        <p class="text-muted">Přehled vaší aktivity na NerdMatchi</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Všechny kontakty</h5>
+                <h2 class="display-4 text-primary">{{ stats.total_contacts }}</h2>
+                <p class="card-text">Lidí, které vás zaujalo</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Vzájemné matchování</h5>
+                <h2 class="display-4 text-success">{{ stats.matches_count }}</h2>
+                <p class="card-text">Lidí, kteří se vám líbí</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Dostupné profily</h5>
+                <h2 class="display-4 text-info">{{ stats.visible_profiles }}</h2>
+                <p class="card-text">Čeká na prozkoumání</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Co dál?</h5>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('profile.view') }}" class="list-group-item list-group-item-action">
+                        👤 Zobrazit můj profil
+                    </a>
+                    <a href="{{ url_for('profile.edit') }}" class="list-group-item list-group-item-action">
+                        ✏️ Editovat profil
+                    </a>
+                    <a href="/discover" class="list-group-item list-group-item-action">
+                        🔍 Objevuj nové profily
+                    </a>
+                    <a href="/contacts" class="list-group-item list-group-item-action">
+                        💬 Moje kontakty
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,15 +5,14 @@ class Config:
     """Základní konfigurace"""
 
     # Flask
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-2025-nerdmatch'
     DEBUG = os.environ.get('FLASK_DEBUG', False)
 
-    # Session
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=5)  # Session timeout 5 minut
+    # Session management (vestavěné Flask)
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=5)
     SESSION_COOKIE_SECURE = False  # True v produkci (HTTPS)
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_TYPE = 'filesystem'
 
     # Neo4j
     NEO4J_URI = os.environ.get('NEO4J_URI', 'bolt://neo4j:7687')
@@ -22,7 +21,8 @@ class Config:
 
     # Bezpečnost
     PASSWORD_MIN_LENGTH = 8
-    BCRYPT_LOG_ROUNDS = 12  # Počet iterací pro bcrypt
+    BCRYPT_LOG_ROUNDS = 12
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max request size
 
     # Validace
     MAX_EMAIL_LENGTH = 255

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Profil - NerdMatch{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ profile.nickname }}</h1>
+                <p class="text-muted">{{ user.email }}</p>
+
+                <hr>
+
+                <div class="profile-section mb-4">
+                    <h5>Bio</h5>
+                    <p>{{ profile.bio if profile.bio else "Žádné bio" }}</p>
+                </div>
+
+                <div class="profile-section mb-4">
+                    <h5>Úroveň nerdství</h5>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar" role="progressbar"
+                             style="width: {{ (profile.nerd_level or 0) * 10 }}%; background-color: #ff6b6b;"
+                             aria-valuenow="{{ profile.nerd_level or 0 }}" aria-valuemin="0" aria-valuemax="10">
+                            {{ profile.nerd_level or 0 }}/10
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-section mb-4">
+                    <h5>Zájmy</h5>
+                    {% if profile.interests %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for interest in profile.interests %}
+                        <span class="badge bg-primary">{{ interest }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Žádné zájmy</p>
+                    {% endif %}
+                </div>
+
+                <div class="profile-section mb-4">
+                    <h5>Technologie</h5>
+                    {% if profile.technologies %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for tech in profile.technologies %}
+                        <span class="badge bg-success">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Žádné technologie</p>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <a href="{{ url_for('profile.edit') }}" class="btn btn-primary">Editovat profil</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

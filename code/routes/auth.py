@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from utils.validators import validate_email_format, validate_password
 from models.user import User
+from models.profile import Profile
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -51,7 +52,12 @@ def login():
             session['user_id'] = user['id']
             User.update_last_login(user['id'])
             flash("✅ Přihlášeni!", "success")
-            return redirect(url_for('dashboard.index'))
+
+            # Kontrola profilu
+            if not Profile.exists(user['id']):
+                return redirect(url_for('profile.setup'))
+
+            return redirect(url_for('index'))
         else:
             flash("❌ Nesprávný email nebo heslo", "error")
     return render_template('auth/login.html')

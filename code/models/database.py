@@ -1,7 +1,6 @@
 """Neo4j databázová inicializace"""
 
-from neo4j import GraphDatabase
-from neo4j.exceptions import ServiceUnavailable
+from py2neo import Graph
 import logging
 
 logger = logging.getLogger(__name__)
@@ -10,7 +9,7 @@ class Database:
     """Třída pro práci s Neo4j"""
 
     def __init__(self, uri: str, user: str, password: str):
-        self.driver = None
+        self.graph = None
         self.uri = uri
         self.user = user
         self.password = password
@@ -18,26 +17,17 @@ class Database:
     def connect(self):
         """Připojit k Neo4j"""
         try:
-            self.driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
-            with self.driver.session() as session:
-                session.run("RETURN 1")
+            self.graph = Graph(self.uri, auth=(self.user, self.password))
+            self.graph.run("RETURN 1")
             logger.info("✅ Připojeno k Neo4j")
             return True
-        except ServiceUnavailable:
-            logger.error("❌ Neo4j server není dostupný")
-            return False
         except Exception as e:
             logger.error(f"❌ Chyba: {e}")
             return False
 
-    def close(self):
-        """Odpojit"""
-        if self.driver:
-            self.driver.close()
-
     def init_schema(self):
         """Inicializuj schéma"""
-        with self.driver.session() as session:
+        try:
             indexes = [
                 "CREATE INDEX idx_user_id IF NOT EXISTS ON :User(id)",
                 "CREATE INDEX idx_user_email IF NOT EXISTS ON :User(email)",
@@ -50,21 +40,25 @@ class Database:
             ]
             for index in indexes:
                 try:
-                    session.run(index)
+                    self.graph.run(index)
                 except:
                     pass
             logger.info("✅ Schéma inicializováno")
+        except Exception as e:
+            logger.error(f"Chyba schématu: {e}")
 
     def init_system_interests(self):
         """Vytvoř systémové zájmy"""
         interests = ["programování", "videohry", "sci-fi", "fantasy", "matematika", 
                      "AI / Machine Learning", "hardware", "komiksy"]
-        with self.driver.session() as session:
+        try:
             for interest in interests:
-                session.run('MERGE (i:InterestCategory {name: $name, type: "SYSTEM"}) '
-                           'ON CREATE SET i.created_at = datetime()',
-                           name=interest)
+                self.graph.run('MERGE (i:InterestCategory {name: $name, type: "SYSTEM"}) '
+                              'ON CREATE SET i.created_at = datetime()',
+                              name=interest)
             logger.info(f"✅ {len(interests)} zájmů vytvořeno")
+        except Exception as e:
+            logger.error(f"Chyba zájmů: {e}")
 
     def init_system_technologies(self):
         """Vytvoř systémové technologie"""
@@ -73,12 +67,14 @@ class Database:
             ("Flask", "FRAMEWORK"), ("Django", "FRAMEWORK"), ("React", "FRAMEWORK"),
             ("Docker", "TOOL"), ("Git", "TOOL"), ("Arduino", "HARDWARE"),
         ]
-        with self.driver.session() as session:
+        try:
             for name, category in technologies:
-                session.run('MERGE (t:Technology {name: $name}) '
-                           'ON CREATE SET t.category = $category, t.created_at = datetime()',
-                           name=name, category=category)
+                self.graph.run('MERGE (t:Technology {name: $name}) '
+                              'ON CREATE SET t.category = $category, t.created_at = datetime()',
+                              name=name, category=category)
             logger.info(f"✅ {len(technologies)} technologií vytvořeno")
+        except Exception as e:
+            logger.error(f"Chyba technologií: {e}")
 
     def init_all(self):
         """Inicializuj vše"""
@@ -89,16 +85,22 @@ class Database:
         logger.info("✅ Databáze OK")
 
     def query(self, query_str: str, **kwargs):
-        """Spusť dotaz (čtení)"""
-        with self.driver.session() as session:
-            result = session.run(query_str, **kwargs)
-            return result.data()
+        """Spusť dotaz"""
+        try:
+            result = self.graph.run(query_str, **kwargs)
+            return [dict(record) for record in result]
+        except Exception as e:
+            logger.error(f"Query error: {e}")
+            return []
 
     def execute(self, query_str: str, **kwargs):
         """Spusť dotaz (zápis)"""
-        with self.driver.session() as session:
-            result = session.run(query_str, **kwargs)
-            return result.data()
+        try:
+            result = self.graph.run(query_str, **kwargs)
+            return [dict(record) for record in result]
+        except Exception as e:
+            logger.error(f"Execute error: {e}")
+            return []
 
 # Globální instance
 db = None
@@ -110,10 +112,6 @@ def init_db(app):
     if not db.connect():
         raise RuntimeError("Nelze se připojit k Neo4j")
     db.init_all()
-    @app.teardown_appcontext
-    def close(error):
-        if db:
-            db.close()
     return db
 
 def get_db():

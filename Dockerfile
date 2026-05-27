@@ -1,6 +1,6 @@
-FROM python:3.10-alpine
+FROM python:3.10-slim
 WORKDIR /code
-COPY requirements.txt /code
-RUN pip install -r requirements.txt --no-cache-dir
-COPY ./code /code
-CMD python app.py
+COPY code/requirements.txt /code/
+RUN pip install --no-cache-dir -r requirements.txt
+COPY code /code
+CMD ["python", "app.py"]
