@@ -25,6 +25,8 @@ class CustomTagsInput {
 
         // Zobraz existující vybrané tagy
         this.renderTags();
+        // Aktualizuj skryté pole s dříve vybranými tagy
+        this.updateHiddenInput();
 
         // Autocomplete na input
         this.input.addEventListener('input', (e) => this.handleInput(e));
