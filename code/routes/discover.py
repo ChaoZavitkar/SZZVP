@@ -26,7 +26,7 @@ def get_available_profiles(user_id, db, min_nerd=0, max_nerd=10, interests=None,
         AND NOT (
             EXISTS {
                 MATCH (user)-[skip:SKIP]->(other)
-                WHERE duration.between(skip.created_at, datetime()) < duration({hours: $timeout_hours})
+                WHERE skip.created_at > datetime() - duration({hours: $timeout_hours})
             }
         )
     '''
