@@ -56,36 +56,29 @@ def index():
 
     db = get_db()
 
-    # Počet všech kontaktů (LIKES vztahy - oba směry)
-    total_contacts = db.query('''
+    # Počet všech kontaktů - LIKES oba směry
+    total_contacts = len(db.query('''
         MATCH (user:User {id: $user_id})
-        MATCH (user)-[:LIKES|:LIKES]-(other:User)
-        WHERE other.id <> user.id
-        RETURN count(DISTINCT other) as total_contacts
-    ''', user_id=user_id)
-    total_contacts = total_contacts[0]['total_contacts'] if total_contacts else 0
+        MATCH (user)-[:LIKES]-(other:User)
+        RETURN DISTINCT other.id as other_id
+    ''', user_id=user_id))
 
-    # Počet matchů (oboustranný zájem - mutual likes)
-    matches_count = db.query('''
-        MATCH (user:User {id: $user_id})
-        MATCH (user)-[:LIKES]->(other:User)-[:LIKES]->(user)
-        RETURN count(DISTINCT other) as matches_count
-    ''', user_id=user_id)
-    matches_count = matches_count[0]['matches_count'] if matches_count else 0
+    # Počet vzájemných matchů - oboustranné LIKES
+    matches_count = len(db.query('''
+        MATCH (friend:User)-[:LIKES]->(user:User)-[:LIKES]->(friend:User)
+        WHERE user.id = $user_id
+        RETURN DISTINCT friend.id as friend_id
+    ''', user_id=user_id))
 
-    # Počet všech dostupných profilů (kromě těch, které si lajknul)
-    visible_profiles = db.query('''
+    # Počet dostupných profilů - všichni mimo těch co si lajknul
+    visible_profiles = len(db.query('''
         MATCH (user:User {id: $user_id})
-        MATCH (other:User)
+        MATCH (other:User)-[:HAS_ACCOUNT]->(account)
         WHERE other.id <> user.id
-        OPTIONAL MATCH (other)-[:HAS_ACCOUNT]->(account)
-        WHERE account.is_deleted = false
-        OPTIONAL MATCH (user)-[:LIKES]->(other)
-        WITH other, account
-        WHERE account IS NOT NULL AND NOT (user)-[:LIKES]->(other)
-        RETURN count(DISTINCT other) as visible_profiles
-    ''', user_id=user_id)
-    visible_profiles = visible_profiles[0]['visible_profiles'] if visible_profiles else 0
+        AND account.is_deleted = false
+        AND NOT (user)-[:LIKES]->(other)
+        RETURN DISTINCT other.id as other_id
+    ''', user_id=user_id))
 
     stats = {
         'total_contacts': total_contacts,

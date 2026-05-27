@@ -94,20 +94,22 @@
                     </div>
 
                     <div class="col-md-4 text-center">
-                        <form method="POST" class="d-grid gap-2">
-                            <button type="button" class="btn btn-lg btn-danger" onclick="document.getElementById('skip_form').submit();">
-                                ⏭️ Přeskočit
-                            </button>
-                            <button type="submit" formaction="{{ url_for('discover.like_profile', target_user_id=profile.user_id) }}" class="btn btn-lg btn-success">
-                                ❤️ Zaujalo mě!
-                            </button>
-                        </form>
+                        <div class="d-grid gap-2">
+                            <form method="POST" action="{{ url_for('discover.skip_profile') }}">
+                                <button type="submit" class="btn btn-lg btn-danger w-100">
+                                    ⏭️ Přeskočit
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('discover.like_profile', target_user_id=profile.user_id) }}">
+                                <button type="submit" class="btn btn-lg btn-success w-100">
+                                    ❤️ Zaujalo mě!
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <form id="skip_form" method="POST" action="{{ url_for('discover.skip_profile', target_user_id=profile.user_id) }}" style="display: none;"></form>
 
         {% else %}
         <div class="alert alert-info" role="alert">
