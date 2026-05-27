@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "main",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": "python3",
       "runtimeArgs": ["code/app.py"],
       "port": 5000,
       "autoPort": true

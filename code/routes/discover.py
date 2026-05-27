@@ -74,7 +74,8 @@ def discover():
     available = get_available_profiles(user_id, db, min_nerd, max_nerd, interests)
     profile = choice(available) if available else None
 
-    all_interests = Profile.get_all_interests()
+    # Zobraz jen SYSTEM tagy v filtru (ne custom USER tagy)
+    all_interests = Profile.get_all_interests(system_only=True)
 
     return render_template('discover/index.html',
                          profile=profile,

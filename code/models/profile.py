@@ -179,17 +179,24 @@ class Profile:
             return None
 
     @staticmethod
-    def get_all_interests(limit_user_tags: int = 5):
-        """Vrať dostupné zájmy (SYSTEM všechny, USER omezené)"""
+    def get_all_interests(limit_user_tags: int = 5, system_only: bool = False):
+        """Vrať dostupné zájmy (SYSTEM všechny, USER omezené, nebo jen SYSTEM)"""
         db = get_db()
-        result = db.query('''
-            MATCH (i:InterestCategory)
-            RETURN i.name as name, i.type as type
-            ORDER BY
-                CASE WHEN i.type = "SYSTEM" THEN 0 ELSE 1 END ASC,
-                i.name ASC,
-                i.created_at DESC
-        ''')
+        if system_only:
+            result = db.query('''
+                MATCH (i:InterestCategory {type: "SYSTEM"})
+                RETURN i.name as name, i.type as type
+                ORDER BY i.name ASC
+            ''')
+        else:
+            result = db.query('''
+                MATCH (i:InterestCategory)
+                RETURN i.name as name, i.type as type
+                ORDER BY
+                    CASE WHEN i.type = "SYSTEM" THEN 0 ELSE 1 END ASC,
+                    i.name ASC,
+                    i.created_at DESC
+            ''')
 
         # Rozděleme na SYSTEM a USER, limitujeme USER
         system_interests = [r for r in result if r['type'] == 'SYSTEM']
@@ -198,19 +205,27 @@ class Profile:
         return system_interests + user_interests
 
     @staticmethod
-    def get_all_technologies(limit_user_tags: int = 5):
-        """Vrať dostupné technologie (SYSTEM všechny, USER omezené)"""
+    def get_all_technologies(limit_user_tags: int = 5, system_only: bool = False):
+        """Vrať dostupné technologie (SYSTEM všechny, USER omezené, nebo jen SYSTEM)"""
         db = get_db()
-        result = db.query('''
-            MATCH (t:Technology)
-            WHERE t.category IS NOT NULL
-            RETURN t.name as name, t.category as category
-            ORDER BY
-                CASE WHEN t.category = "USER" THEN 1 ELSE 0 END ASC,
-                t.category ASC,
-                t.name ASC,
-                t.created_at DESC
-        ''')
+        if system_only:
+            result = db.query('''
+                MATCH (t:Technology)
+                WHERE t.category IS NOT NULL AND t.category <> "USER"
+                RETURN t.name as name, t.category as category
+                ORDER BY t.name ASC
+            ''')
+        else:
+            result = db.query('''
+                MATCH (t:Technology)
+                WHERE t.category IS NOT NULL
+                RETURN t.name as name, t.category as category
+                ORDER BY
+                    CASE WHEN t.category = "USER" THEN 1 ELSE 0 END ASC,
+                    t.category ASC,
+                    t.name ASC,
+                    t.created_at DESC
+            ''')
 
         # Rozděleme na SYSTEM a USER, limitujeme USER
         system_techs = [r for r in result if r['category'] != 'USER']
