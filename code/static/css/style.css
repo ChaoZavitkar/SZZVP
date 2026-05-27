@@ -119,6 +119,11 @@ a:hover {
     border-radius: 15px 15px 0 0;
 }
 
+.card-title {
+    color: white !important;
+    font-weight: 600;
+}
+
 .card-body {
     padding: 1.5rem;
 }
@@ -298,10 +303,37 @@ a:hover {
     margin: 1rem 0;
 }
 
+/* Override Bootstrap text-primary, text-success, text-info */
+.stat-card h2.display-4 {
+    background: linear-gradient(135deg, var(--primary-color), var(--nerd-purple)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    color: transparent !important;
+}
+
+.stat-card h2.text-primary,
+.stat-card h2.text-success,
+.stat-card h2.text-info {
+    background: linear-gradient(135deg, var(--primary-color), var(--nerd-purple)) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    color: transparent !important;
+}
+
 .stat-label {
     color: var(--text-muted);
     font-size: 1.1rem;
     margin-top: 1rem;
+}
+
+.stat-card .card-title {
+    color: var(--text-muted) !important;
+}
+
+.stat-card .card-text {
+    color: var(--text-muted);
 }
 
 .stat-icon {
@@ -322,6 +354,33 @@ a:hover {
 .table thead {
     border-color: var(--border-color);
     background: rgba(255, 255, 255, 0.05);
+}
+
+/* List Groups */
+.list-group {
+    border-color: var(--border-color);
+}
+
+.list-group-item {
+    background: transparent;
+    border-color: var(--border-color);
+    color: var(--text-light);
+}
+
+.list-group-item:first-child {
+    border-top-color: var(--border-color);
+}
+
+.list-group-item:hover,
+.list-group-item-action:hover {
+    background: rgba(255, 107, 107, 0.15);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.list-group-item-action:active {
+    background: rgba(255, 107, 107, 0.25);
+    color: var(--primary-color);
 }
 
 /* Badges */
@@ -849,10 +908,31 @@ footer a {
 .p-4 { padding: 2rem; }
 .p-5 { padding: 3rem; }
 
-.text-primary { color: var(--primary-color); }
-.text-success { color: var(--success-color); }
-.text-danger { color: var(--danger-color); }
-.text-warning { color: var(--warning-color); }
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+/* Override Bootstrap display classes */
+.display-4 {
+    font-size: 3.5rem;
+    font-weight: 300;
+}
 
 .bg-primary { background: var(--primary-color); }
 .bg-success { background: var(--success-color); }
