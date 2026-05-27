@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Kontakty - NerdMatch{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <h1 class="mb-4">💬 Moje kontakty</h1>
+
+        <!-- Vzájemné matchování -->
+        {% if matches %}
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">🔥 Vzájemný zájem ({{ matches|length }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for contact in matches %}
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-1"><strong>{{ contact.nickname }}</strong></h6>
+                                <p class="text-muted mb-1">Nerd level: {{ contact.nerd_level }}/10</p>
+                                {% if contact.bio %}
+                                <p class="mb-0">{{ contact.bio[:100] }}{% if contact.bio|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                                <small class="text-muted d-block mt-1">Spojení od: {{ contact.created_at }}</small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <form method="POST" action="{{ url_for('contacts.remove_contact', connection_id=contact.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Opravdu chceš odebrat tento kontakt?')">
+                                        🗑️ Odebrat
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Jednotranné zájmy -->
+        {% if one_way_interests %}
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">💭 Tvůj zájem ({% if one_way_interests %}{{ one_way_interests|length }}{% endif %})</h5>
+            </div>
+            <div class="card-body">
+                {% if one_way_interests %}
+                <div class="list-group">
+                    {% for contact in one_way_interests %}
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-1"><strong>{{ contact.nickname }}</strong></h6>
+                                <p class="text-muted mb-1">Nerd level: {{ contact.nerd_level }}/10</p>
+                                {% if contact.bio %}
+                                <p class="mb-0">{{ contact.bio[:100] }}{% if contact.bio|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                                <small class="text-muted d-block mt-1">Lajkováno: {{ contact.created_at }}</small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <form method="POST" action="{{ url_for('contacts.remove_contact', connection_id=contact.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Opravdu chceš odebrat tento kontakt?')">
+                                        🗑️ Odebrat
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">Zatím si nikdo nelíbí</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Prázdný stav -->
+        {% if not matches and not one_way_interests %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Žádné kontakty</h4>
+            <p>Zatím nemáš žádné kontakty. <a href="{{ url_for('discover.discover') }}">Jdi objevovat nové profily!</a></p>
+        </div>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{{ url_for('discover.discover') }}" class="btn btn-primary">Pokračovat v hledání</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

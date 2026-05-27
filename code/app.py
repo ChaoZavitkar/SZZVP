@@ -5,6 +5,8 @@ from config import Config
 from models.database import init_db, get_db
 from routes.auth import auth_bp
 from routes.profile import profile_bp
+from routes.discover import discover_bp
+from routes.contacts import contacts_bp
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -20,6 +22,8 @@ except Exception as e:
 # Registruj blueprinty
 app.register_blueprint(auth_bp)
 app.register_blueprint(profile_bp)
+app.register_blueprint(discover_bp)
+app.register_blueprint(contacts_bp)
 
 # Session timeout middleware
 @app.before_request

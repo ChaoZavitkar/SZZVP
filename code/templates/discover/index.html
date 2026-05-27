@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Objevuj - NerdMatch{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h1 class="mb-4">🔍 Objevuj nové profily</h1>
+
+        <!-- Filtr -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Filtrování</h5>
+                <form method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="min_nerd" class="form-label">Nerd level od: <span id="min_nerd_val">{{ min_nerd }}</span></label>
+                        <input type="range" class="form-range" id="min_nerd" name="min_nerd"
+                               min="0" max="10" value="{{ min_nerd }}"
+                               oninput="document.getElementById('min_nerd_val').innerText = this.value">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="max_nerd" class="form-label">Nerd level do: <span id="max_nerd_val">{{ max_nerd }}</span></label>
+                        <input type="range" class="form-range" id="max_nerd" name="max_nerd"
+                               min="0" max="10" value="{{ max_nerd }}"
+                               oninput="document.getElementById('max_nerd_val').innerText = this.value">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Zájmy (nepovinné)</label>
+                        <div class="row">
+                            {% for interest in all_interests %}
+                            <div class="col-md-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="interest_{{ loop.index }}"
+                                           name="interests" value="{{ interest.name }}"
+                                           {% if interest.name in selected_interests %}checked{% endif %}>
+                                    <label class="form-check-label" for="interest_{{ loop.index }}">
+                                        {{ interest.name }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">Aplikovat filtr</button>
+                        <a href="{{ url_for('discover.discover') }}" class="btn btn-secondary">Resetovat</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Profil -->
+        {% if profile %}
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2>{{ profile.nickname }}</h2>
+                        <p class="text-muted mb-3">Nerd level: <strong>{{ profile.nerd_level }}/10</strong></p>
+
+                        {% if profile.bio %}
+                        <p>{{ profile.bio }}</p>
+                        {% else %}
+                        <p class="text-muted"><em>Bez bio</em></p>
+                        {% endif %}
+
+                        <div class="mt-3">
+                            <h5>Zájmy</h5>
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                {% if profile.interests %}
+                                    {% for interest in profile.interests %}
+                                    <span class="badge bg-primary">{{ interest }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                <span class="text-muted">Žádné zájmy</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h5>Technologie</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if profile.technologies %}
+                                    {% for tech in profile.technologies %}
+                                    <span class="badge bg-success">{{ tech }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                <span class="text-muted">Žádné technologie</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 text-center">
+                        <form method="POST" class="d-grid gap-2">
+                            <button type="button" class="btn btn-lg btn-danger" onclick="document.getElementById('skip_form').submit();">
+                                ⏭️ Přeskočit
+                            </button>
+                            <button type="submit" formaction="{{ url_for('discover.like_profile', target_user_id=profile.user_id) }}" class="btn btn-lg btn-success">
+                                ❤️ Zaujalo mě!
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="skip_form" method="POST" action="{{ url_for('discover.skip_profile', target_user_id=profile.user_id) }}" style="display: none;"></form>
+
+        {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Žádné profily</h4>
+            <p>Nebyly nalezeny žádné profily odpovídající tvým filtrům. Zkus změnit parametry vyhledávání.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
