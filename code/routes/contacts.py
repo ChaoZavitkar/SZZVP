@@ -15,7 +15,7 @@ def list_contacts():
 
     db = get_db()
 
-    # Vrať všechny likes (oba směry) s informací o tom, jestli je to mutual
+    # Vrať všechny likes (oba směry) s informací o tom, jestli je to mutual + zájmy a technologie
     result = db.query('''
         MATCH (user:User {id: $user_id})
 
@@ -23,10 +23,14 @@ def list_contacts():
         WHERE other.id <> user.id
 
         OPTIONAL MATCH (other)-[:HAS_PROFILE]->(profile:Profile)
+        OPTIONAL MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
+        OPTIONAL MATCH (profile)-[:LIKES_TECHNOLOGY]->(tech:Technology)
         OPTIONAL MATCH (user)-[:LIKES]->(other)
         OPTIONAL MATCH (other)-[:LIKES]->(user)
 
         WITH other, profile,
+             collect(DISTINCT interest.name) as interests,
+             collect(DISTINCT tech.name) as technologies,
              CASE WHEN (user)-[:LIKES]->(other) AND (other)-[:LIKES]->(user) THEN true ELSE false END as is_match,
              CASE WHEN (user)-[:LIKES]->(other) THEN 'initiated' ELSE 'received' END as initiated_by
 
@@ -34,6 +38,8 @@ def list_contacts():
                profile.nickname as nickname,
                profile.bio as bio,
                profile.nerd_level as nerd_level,
+               interests,
+               technologies,
                is_match,
                initiated_by
 

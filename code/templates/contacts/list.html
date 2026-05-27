@@ -24,7 +24,12 @@
                                 {% if contact.bio %}
                                 <p class="mb-0">{{ contact.bio[:100] }}{% if contact.bio|length > 100 %}...{% endif %}</p>
                                 {% endif %}
-                                <small class="text-muted d-block mt-1">Spojení od: {{ contact.created_at }}</small>
+                                {% if contact.interests %}
+                                <small class="text-muted d-block mt-1">🎯 Zájmy: {{ contact.interests|join(', ') }}</small>
+                                {% endif %}
+                                {% if contact.technologies %}
+                                <small class="text-muted d-block">💻 Technologie: {{ contact.technologies|join(', ') }}</small>
+                                {% endif %}
                             </div>
                             <div class="col-md-4 text-end">
                                 <form method="POST" action="{{ url_for('contacts.remove_contact', other_user_id=contact.user_id) }}" class="d-inline">
@@ -58,7 +63,12 @@
                                 {% if contact.bio %}
                                 <p class="mb-0">{{ contact.bio[:100] }}{% if contact.bio|length > 100 %}...{% endif %}</p>
                                 {% endif %}
-                                <small class="text-muted d-block mt-1">Lajkováno: {{ contact.created_at }}</small>
+                                {% if contact.interests %}
+                                <small class="text-muted d-block mt-1">🎯 Zájmy: {{ contact.interests|join(', ') }}</small>
+                                {% endif %}
+                                {% if contact.technologies %}
+                                <small class="text-muted d-block">💻 Technologie: {{ contact.technologies|join(', ') }}</small>
+                                {% endif %}
                             </div>
                             <div class="col-md-4 text-end">
                                 <form method="POST" action="{{ url_for('contacts.remove_contact', other_user_id=contact.user_id) }}" class="d-inline">
@@ -93,7 +103,12 @@
                                 {% if contact.bio %}
                                 <p class="mb-0">{{ contact.bio[:100] }}{% if contact.bio|length > 100 %}...{% endif %}</p>
                                 {% endif %}
-                                <small class="text-muted d-block mt-1">Lajknutí: {{ contact.created_at }}</small>
+                                {% if contact.interests %}
+                                <small class="text-muted d-block mt-1">🎯 Zájmy: {{ contact.interests|join(', ') }}</small>
+                                {% endif %}
+                                {% if contact.technologies %}
+                                <small class="text-muted d-block">💻 Technologie: {{ contact.technologies|join(', ') }}</small>
+                                {% endif %}
                             </div>
                             <div class="col-md-4 text-end">
                                 <a href="/discover" class="btn btn-sm btn-success">👀 Jít do Objevuj</a>
