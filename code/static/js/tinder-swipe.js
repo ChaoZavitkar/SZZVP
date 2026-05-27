@@ -22,6 +22,11 @@ class TinderSwipe {
     init() {
         if (!this.card) return;
 
+        // Reset card state
+        this.card.style.transform = '';
+        this.card.style.opacity = '1';
+        this.card.classList.remove('swipe-left', 'swipe-right', 'dragging');
+
         // Touch events
         this.card.addEventListener('touchstart', (e) => this.handleTouchStart(e));
         this.card.addEventListener('touchmove', (e) => this.handleTouchMove(e));
@@ -107,15 +112,24 @@ class TinderSwipe {
         } else if (this.currentX < -threshold) {
             this.swipeLeft();
         } else {
-            // Return to original position
+            // Return to original position with animation
+            this.card.style.transition = 'transform 0.2s ease-out, opacity 0.2s ease-out';
             this.card.style.transform = '';
-            this.card.style.opacity = '';
+            this.card.style.opacity = '1';
+            setTimeout(() => {
+                this.card.style.transition = '';
+            }, 200);
             this.currentX = 0;
         }
     }
 
     swipeLeft() {
+        if (this.card.classList.contains('swipe-left') ||
+            this.card.classList.contains('swipe-right')) {
+            return; // Already swiping
+        }
         this.card.classList.add('swipe-left');
+        this.showLoadingState();
         setTimeout(() => {
             const skipBtn = document.querySelector('.btn-skip form');
             if (skipBtn) {
@@ -125,13 +139,23 @@ class TinderSwipe {
     }
 
     swipeRight() {
+        if (this.card.classList.contains('swipe-left') ||
+            this.card.classList.contains('swipe-right')) {
+            return; // Already swiping
+        }
         this.card.classList.add('swipe-right');
+        this.showLoadingState();
         setTimeout(() => {
             const likeBtn = document.querySelector('.btn-like form');
             if (likeBtn) {
                 likeBtn.submit();
             }
         }, 300);
+    }
+
+    showLoadingState() {
+        // Add loading animation while page reloads
+        this.card.style.opacity = '0.5';
     }
 
     toggleFilter() {
