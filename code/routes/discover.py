@@ -24,11 +24,16 @@ def get_available_profiles(user_id, db, min_nerd=0, max_nerd=10, interests=None)
     params = {'user_id': user_id, 'min_nerd': min_nerd, 'max_nerd': max_nerd}
 
     if interests:
+        # Profil MUSÍ mít VŠECHNY vybrané zájmy
         query += '''
+        WITH profile, other
         MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
         WHERE interest.name IN $interests
+        WITH profile, other, collect(DISTINCT interest.name) as matched_interests
+        WHERE size(matched_interests) = $interest_count
         '''
         params['interests'] = interests
+        params['interest_count'] = len(interests)
 
     query += '''
         OPTIONAL MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
