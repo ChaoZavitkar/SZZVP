@@ -12,15 +12,23 @@ class Connection:
         try:
             # Kontrola existence
             if Connection.exists(sender_id, receiver_id):
+                print(f"LIKES already exists: {sender_id} -> {receiver_id}")
                 return {'id': receiver_id}
 
+            print(f"Creating LIKES: {sender_id} -> {receiver_id}")
             result = db.execute('''
                 MATCH (sender:User {id: $sender_id})
                 MATCH (receiver:User {id: $receiver_id})
                 CREATE (sender)-[:LIKES {created_at: datetime()}]->(receiver)
                 RETURN receiver.id as id
             ''', sender_id=sender_id, receiver_id=receiver_id)
-            return result[0] if result else None
+
+            if result:
+                print(f"LIKES created successfully: {result[0]}")
+                return result[0]
+            else:
+                print(f"LIKES creation returned empty result")
+                return None
         except Exception as e:
             print(f"Error creating like: {e}")
             return None

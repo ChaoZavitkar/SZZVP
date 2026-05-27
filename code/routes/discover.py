@@ -95,8 +95,14 @@ def like_profile(target_user_id):
         flash("❌ Nemůžete si lajkovat sami sebe", "error")
         return redirect(url_for('discover.discover'))
 
-    Connection.create(user_id, target_user_id)
-    flash("❤️ Profil se ti líbí!", "success")
+    result = Connection.create(user_id, target_user_id)
+    if result:
+        flash("❤️ Profil se ti líbí!", "success")
+        # Kontrola matche
+        if Connection.is_mutual(user_id, target_user_id):
+            flash("🔥 JE TO MATCH! 🔥", "success")
+    else:
+        flash("❌ Chyba při lajknutí profilu", "error")
 
     # Zachov filtry
     min_nerd = request.form.get('min_nerd', 0, type=int)
@@ -117,7 +123,9 @@ def skip_profile(target_user_id):
         return redirect(url_for('auth.login'))
 
     # Zapiš skip
-    Connection.skip(user_id, target_user_id)
+    result = Connection.skip(user_id, target_user_id)
+    if not result:
+        flash("⚠️ Chyba při přeskakování profilu", "warning")
 
     # Zachov filtry
     min_nerd = request.form.get('min_nerd', 0, type=int)
