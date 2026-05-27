@@ -45,6 +45,16 @@ docker-compose up --build
 # Heslo: adminpass
 ```
 
+### Automatická Inicializace Databáze
+
+Při prvním `docker-compose up` se automaticky vytvoří 20 testovacích profilů:
+- Všechny systémové zájmy (10 kategorií)
+- Všechny technologie (20+ položek)
+- 20 uživatelských profilů s různými nerd levely
+- Připraveny pro testování (matchování, filtrování, atd.)
+
+**Status:** ✅ Probíhá automaticky - žádné ruční kroky
+
 ### Zastavení
 ```bash
 docker-compose down

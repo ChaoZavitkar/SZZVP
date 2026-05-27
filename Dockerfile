@@ -3,4 +3,6 @@ WORKDIR /code
 COPY code/requirements.txt /code/
 RUN pip install --no-cache-dir -r requirements.txt
 COPY code /code
-CMD ["python", "app.py"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
