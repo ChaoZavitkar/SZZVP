@@ -27,7 +27,7 @@
                                 <small class="text-muted d-block mt-1">Spojení od: {{ contact.created_at }}</small>
                             </div>
                             <div class="col-md-4 text-end">
-                                <form method="POST" action="{{ url_for('contacts.remove_contact', connection_id=contact.id) }}" class="d-inline">
+                                <form method="POST" action="{{ url_for('contacts.remove_contact', other_user_id=contact.user_id) }}" class="d-inline">
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Opravdu chceš odebrat tento kontakt?')">
                                         🗑️ Odebrat
                                     </button>
@@ -61,7 +61,7 @@
                                 <small class="text-muted d-block mt-1">Lajkováno: {{ contact.created_at }}</small>
                             </div>
                             <div class="col-md-4 text-end">
-                                <form method="POST" action="{{ url_for('contacts.remove_contact', connection_id=contact.id) }}" class="d-inline">
+                                <form method="POST" action="{{ url_for('contacts.remove_contact', other_user_id=contact.user_id) }}" class="d-inline">
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Opravdu chceš odebrat tento kontakt?')">
                                         🗑️ Odebrat
                                     </button>
