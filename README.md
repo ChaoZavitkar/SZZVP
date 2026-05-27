@@ -1,27 +1,19 @@
-# 🔥 Matchomat - Online Seznamka
+# 🔥 NerdMatch - Seznamka pro Nerdy
 
-Jednoduchá webová aplikace sociální sítě pro hledání "matchů" mezi uživateli, inspirovaná online seznamkami (Tinder). Vytvořeno s **Flask** a **Neo4j** grafovou databází.
+Webová aplikace pro seznamování se zaměřením na lidi se zájmem o technologie, vědu, hry, sci-fi, fantasy a matematiku.
 
-## 🎯 Co je to Matchomat?
-
-Matchomat vám umožní:
-- 👤 Prohlédnout si dostupné profily
-- 👍 Dávat si "like" nebo "dislike" na profily
-- 🔥 Vidět, s kým máte vzájemný interesse (match)
-- 📊 Sledovat statistiky vašeho profilu
+Vytvořeno s **Flask** (Python), **Neo4j** (grafová databází) a **Docker**.
 
 ---
 
-## 🏗️ Architektura
+## 🎯 Funkcionality
 
-Pro detailní popis architektury, datového modelu, API a pracovního toku viz: **[ARCHITECTURE.md](ARCHITECTURE.md)**
-
-**Krátký přehled:**
-```
-Browser → Flask (Python) → Neo4j (Grafová DB)
-                ↓
-          Jinja2 Templates
-```
+- ✅ **Autentizace** - Registrace, přihlášení, odhlášení, smazání účtu
+- ✅ **Profily** - Vytvoření a editace profilu (přezdívka, bio, nerd level, zájmy, technologie)
+- ✅ **Vyhledávání** - Procházení dostupných profilů s filtrováním (nerd level, zájmy)
+- ✅ **Matchování** - "Líbí se mi"功能, automatická detekce vzájemného zájmu
+- ✅ **Kontakty** - Seznam matchů a jednostranných zájmů
+- ✅ **Dashboard** - Statistiky (počet kontaktů, matchů, dostupných profilů)
 
 ---
 
@@ -29,191 +21,261 @@ Browser → Flask (Python) → Neo4j (Grafová DB)
 
 ### Požadavky
 - Docker & Docker Compose
-- Port 5000 (Flask) a 7687 (Neo4j) musí být volné
+- Porty 5000 (Flask) a 7687 (Neo4j) musí být volné
 
 ### Kroky
 
-1. **Klonuj nebo otevři projekt**
 ```bash
+# 1. Jdi do projektové složky
 cd SZZVP
-```
 
-2. **Spusť Docker Compose**
-```bash
+# 2. Spusť Docker Compose
 docker-compose up --build
+
+# 3. Počkej 10-15 sekund na inicializaci Neo4j
+
+# 4. Otevři aplikaci v prohlížeči
+# http://localhost:5000
+
+# 5. (Volitelně) Neo4j Browser
+# http://localhost:7474
+# Uživatel: neo4j
+# Heslo: adminpass
 ```
 
-Při prvním spuštění si Docker stáhne obrazy a postaví kontejnery. Počkej 10-15 sekund, až se Neo4j inicializuje.
-
-3. **Otevři aplikaci v prohlížeči**
-```
-http://localhost:5000
-```
-
-4. _(Volitelně)_ Otevři Neo4j Browser
-```
-http://localhost:7474
-Uživatel: neo4j
-Heslo: adminpass
-```
-
----
-
-## 📖 Jak používat aplikaci
-
-### Stránka **Domů** (`/home`)
-- Zobrazí tvůj profil (jméno, věk, záliby)
-- Statistiky: kolik máš matchů a kolik profilů ti zbývá projít
-
-### Stránka **Hledej** (`/search`)
-- Zobrazí náhodný dostupný profil
-- Tlačítko **Like** → profil se ti líbí (vytvoří vztah LIKES)
-- Tlačítko **Dislike** → profil se ti nelíbí (vytvoří vztah DISLIKES)
-
-### Stránka **Shody** (`/matches`)
-- Zobrazí seznam osob, s kterými máš **vzájemný like**
-- To jsou tvoje "matche" 🔥
-
----
-
-## 👥 Testovací uživatelé
-
-Aplikace obsahuje 5 testovacích uživatelů. Přihlášen je defaultně **Pepa** (lze změnit v `code/app.py`):
-
-| Jméno | Věk | Záliby |
-|-------|-----|--------|
-| Pepa | 34 | programming, running |
-| Jana | 30 | cats, running |
-| Michal | 38 | partying, cats |
-| Alena | 32 | kids, cats |
-| Richard | 33 | partying, cats |
-
-**Počáteční state:**
-- Pepa & Jana si dali vzájemný like → mají match ✓
-- Ostatní vztahy jsou nastaveny pro testování
-
----
-
-## 📂 Struktura projektů
-
-```
-SZZVP/
-├── README.md                  ← Toto (návod na použití)
-├── ARCHITECTURE.md            ← Detailní architektura
-├── docker-compose.yml         ← Orchestrace služeb
-├── Dockerfile                 ← Obraz pro Flask aplikaci
-│
-└── code/                      ← Hlavní aplikační kód
-    ├── app.py                 ← Flask aplikace (routy, logika)
-    ├── requirements.txt       ← Python závislosti
-    │
-    └── templates/             ← HTML šablony
-        ├── template.html      ← Základní layout
-        ├── home.html          ← Domovská stránka
-        ├── search.html        ← Vyhledávání profilů
-        └── matches.html       ← Vzájemné matche
-```
-
----
-
-## 🔧 Vývoj a modifikace
-
-### Změna přihlášeného uživatele
-V `code/app.py` (řádek 9):
-```python
-logged_user = "Pepa"  # ← Změní na své jméno
-```
-
-### Přidání nového uživatele
-V `code/app.py`, funkce `mock_data()`:
-```python
-새_user = Node("Person", name="Jméno", age=25, hobbies=["zálib1", "zálib2"])
-users.append(nový_user)
-```
-
-### Modifikace šablon
-Soubory v `code/templates/` se automaticky znovu načtou (díky `debug=True` a `volumes` v docker-compose).
-
-### Kontrola logu
-```bash
-docker-compose logs flask
-```
-
----
-
-## 🛑 Zastavení aplikace
-
+### Zastavení
 ```bash
 docker-compose down
 ```
 
-Zastaví a odebere kontejnery. Data v Neo4j budou vymazána (jsou volána `mock_data()` při startu).
+---
+
+## 📋 Testovací účty
+
+V databázi jsou připravené účty:
+
+| Email | Heslo | Profil | Nerd Level | Zájmy |
+|-------|-------|--------|-----------|-------|
+| `alice@example.com` | `Alice123!@` | Alice | 8/10 | programování, sci-fi |
+| `bob@example.com` | `Bob123!@` | Bob | 6/10 | videohry, matematika |
+
+**Status:** Alice ❤️ Bob (Alice si lajkla Boba, ale Bob se ještě nepřihlásil)
+
+### Testovací scénář
+
+1. **Přihlášení:**
+   ```
+   Email: alice@example.com
+   Heslo: Alice123!@
+   ```
+
+2. **Procházení aplikace:**
+   - Dashboard: Statistiky
+   - Profil: Zobrazení Alice s bio a zájmy
+   - Objevuj: Procházení dostupných profilů (Boba už nevidí, protože si ho lajkla)
+   - Kontakty: Vidí "Tvůj zájem" na Bob
+
+3. **Vytvoření nového účtu:**
+   - Registrace → Automaticky na vytvoření profilu
+   - Vyplnění údajů → Dashboard
 
 ---
 
-## 🔐 Bezpečnostní poznámky
+## 📊 Datový model
 
-⚠️ **Toto je učební projekt!**
+Aplikace používá Neo4j grafovou databázi s těmito uzly:
 
-Obsahuje bezpečnostní rizika:
-- ❌ Uživatel je hardkodován (bez AuthN)
-- ❌ SQL/Cypher Injection vulnerabilita (string interpolation)
-- ❌ Bez CSRF ochrany
-- ❌ Bez validace vstupů
+- **User** - Email, hashovné heslo, created_at
+- **Account** - Stav účtu, last_login, is_deleted
+- **Profile** - Přezdívka, bio, nerd_level, created_at
+- **InterestCategory** - Systémové zájmy (programování, sci-fi, atd.)
+- **Technology** - Technologie (Python, JavaScript, Docker, atd.)
+- **Connection** - Vztahy mezi uživateli (Like/Match)
 
-**V produkčním kódu:**
-- ✅ Implementovat AuthN/AuthZ
-- ✅ Parametrizované Cypher dotazy
-- ✅ CSRF tokeny
-- ✅ Input validation
-- ✅ HTTPS
+Viz [DEVELOPMENT.md](DEVELOPMENT.md) pro detaily.
+
+---
+
+## 📁 Projektová struktura
+
+```
+SZZVP/
+├── README.md                  ← Toto (návod)
+├── DEVELOPMENT.md            ← Detailní dokumentace
+├── docker-compose.yml        ← Docker orchestrace
+├── Dockerfile                ← Flask kontejner
+│
+└── code/
+    ├── app.py                ← Flask hlavní aplikace
+    ├── config.py             ← Konfigurace
+    ├── requirements.txt      ← Python závislosti
+    │
+    ├── models/
+    │   ├── database.py       ← Neo4j connection
+    │   ├── user.py           ← User operace
+    │   ├── profile.py        ← Profile operace
+    │   └── connection.py     ← Like/Match operace
+    │
+    ├── routes/
+    │   ├── auth.py           ← /register, /login, /logout
+    │   ├── profile.py        ← /profile, /profile/edit
+    │   ├── discover.py       ← /discover (procházení)
+    │   └── contacts.py       ← /contacts
+    │
+    ├── utils/
+    │   └── validators.py     ← Validace vstupů
+    │
+    ├── templates/            ← HTML šablony
+    │   ├── base.html         ← Navbar, footer
+    │   ├── dashboard.html    ← Statistiky
+    │   ├── auth/             ← Login, Register
+    │   ├── profile/          ← Profil
+    │   ├── discover/         ← Vyhledávání
+    │   └── contacts/         ← Kontakty
+    │
+    └── static/
+        ├── css/style.css     ← Bootstrap 5 + vlastní
+        └── js/main.js        ← Validace, interakce
+```
+
+---
+
+## 🔄 Webové rozhraní
+
+### Navigace
+- **Přehled** → Dashboard se statistikami
+- **Objevuj** → Procházení dostupných profilů
+- **Kontakty** → Seznam všech matchů a zájmů
+- **Profil** → Zobrazení a editace profilu
+- **Odhlášení** → Logout
+
+### Key Features
+
+**Dashboard (`/`)**
+- Počet všech kontaktů
+- Počet vzájemných matchů 🔥
+- Počet dostupných profilů
+
+**Objevuj (`/discover`)**
+- Filtrování podle nerd levelu
+- Filtrování podle zájmů
+- Like/Skip profilu
+- Automatická detekce matchů
+
+**Profil (`/profile`)**
+- Zobrazení profilu
+- Editace (přezdívka, bio, nerd level)
+- Výběr zájmů (min 1)
+- Výběr technologií (volitelné)
+
+**Kontakty (`/contacts`)**
+- 🔥 Vzájemné matche
+- 💭 Jednostranné zájmy
+- Možnost odstranit kontakt
+
+---
+
+## 🔒 Bezpečnost
+
+✅ **Implementováno:**
+- Hešování hesel (bcrypt s 12 koly)
+- Session management s 5-minutovým timeoutem
+- Validace vstupů (email, heslo, text pole)
+- Soft delete (GDPR compliance)
+- Parametrizované Cypher dotazy (bez SQL injection)
+
+⚠️ **Pro produkci:**
+- Přidat HTTPS
+- Přidat CSRF ochranu
+- Přidat rate limiting
+- Přidat audit logging
+- Zlepšit input validation
+
+---
+
+## 🛠️ Vývoj a modifikace
+
+### Změna kódu
+Soubory v `code/` se automaticky znovu načtou díky `debug=True`.
+
+```bash
+# Restartuj Flask, aby se změny projevily
+docker-compose restart flask
+```
+
+### Prohlídka logů
+```bash
+docker-compose logs flask
+docker-compose logs neo4j
+```
+
+### Restart jednotlivých služeb
+```bash
+docker-compose restart flask
+docker-compose restart neo4j
+```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Port 5000 je obsazen
-```bash
-docker-compose down  # Zastavit všechny kontejnery
-```
-
-### Neo4j se nespustil
-Počkej 15-20 sekund a spusť znovu:
-```bash
-docker-compose restart neo4j
-```
-
-### Flask se nespustil s chybou "Connection refused"
-Neo4j ještě není připravena. Healthcheck by měl vyřešit, ale zkus:
-```bash
-docker-compose logs neo4j
-```
-
-### HTML šablony se neaktualizují
-Restartuj Flask:
-```bash
-docker-compose restart flask
-```
+| Problém | Řešení |
+|---------|--------|
+| Port 5000/7687 obsazen | `docker-compose down` a zkus znovu |
+| Neo4j se nespustila | Počkej 20 sekund, restartuj: `docker-compose restart neo4j` |
+| Flask se neaktualizuje | `docker-compose restart flask` |
+| Chyba připojení k DB | Ověř `docker-compose logs neo4j` |
 
 ---
 
-## 📚 Další čtení
+## 📚 Dokumentace
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) – Detailní dokumentace architektury, datového modelu, API
-- [Flask dokumentace](https://flask.palletsprojects.com/)
-- [Neo4j Cypher](https://neo4j.com/docs/cypher-manual/current/)
-- [py2neo dokumentace](https://py2neo.org/)
-
----
-
-## 👨‍💻 Autor
-
-Originální řešení: **Pavel Beránek** (Cvičení 11 - NoSQL databázové systémy)
-
-Upraveno pro: **SZZVP projekt**
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Detailní plán, datový model, API endpointy
+- **[test_users.txt](test_users.txt)** - Lista všech testovacích účtů
+- Kód je dokumentován in-line v Python souborech
 
 ---
 
-## 📝 Licence
+## 🔗 Technologie
 
-Tento projekt je určen pro vzdělávací účely.
+- **Backend:** Flask 3.0.0 (Python 3.10)
+- **Databáze:** Neo4j (grafová databáze)
+- **Driver:** py2neo 2021.2.4
+- **Hešování:** bcrypt 4.1.0
+- **Frontend:** Bootstrap 5, Jinja2
+- **Kontejnerizace:** Docker & Docker Compose
+
+---
+
+## ✅ Co je hotovo (MVP)
+
+- ✅ Autentizace (5/5 kroků)
+- ✅ Profil uživatele (vytvoření, zobrazení, editace)
+- ✅ Dashboard (statistiky)
+- ✅ Vyhledávání (procházení, filtrování)
+- ✅ Matchování (like, automatická detekce matchů)
+- ✅ Kontakty (seznam matchů a zájmů)
+
+## 📝 Zbývá (volitelné)
+
+- Phase 6: UI/UX vylepšení (je funkční, ale design by mohl být lepší)
+- Notifikace pro nové matche
+- Vyhledávání podle jména
+- Preference soukromí profilu
+- Profilové fotografie
+
+---
+
+## 👨‍💻 Autor a stav
+
+**Projekt:** NerdMatch - Seznamka pro Nerdy  
+**Status:** MVP hotov, připraveno pro státnice  
+**Datum:** 27.5.2026
+
+Vytvořeno pro **SZZVP státnickou zkoušku** s podporou AI asistenta.
+
+---
+
+## 📄 Licence
+
+Projekt je určen pro vzdělávací účely (státnické zkoušky SZZVP).
