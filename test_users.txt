@@ -1,7 +1,8 @@
 # NerdMatch - Testovací účty
-# Format: email | heslo | poznámka
+# Format: email | heslo | profil_nickname | nerd_level | interestsů
 
-testuser2025@example.com | Test123!@ | Profil: testuser2025, bio prázdné, nerd_level: 7, zájmy: programování
+alice@example.com | Alice123!@ | Alice | 8 | programování, sci-fi
+bob@example.com | Bob123!@ | Bob | 6 | videohry, matematika
+testuser2025@example.com | Test123!@ | testuser2025 | 7 | programování
 
-# Další testovací účty k vytvoření:
-# [přidejte dalších tady]
+# Nové účty (doplňte tady):
