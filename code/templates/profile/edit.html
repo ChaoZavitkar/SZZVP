@@ -66,26 +66,24 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='js/custom-tags.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        window.interestsConfig = {
-            inputId: 'interests_input',
-            suggestionsId: 'interests_suggestions',
-            tagsListId: 'interests_list',
-            hiddenInputId: 'interests_hidden',
-            tags: {{ interests | tojson }},
-            selected: {{ profile.interests | tojson if profile.interests else '[]' }}
-        };
+    window.interestsConfig = {
+        inputId: 'interests_input',
+        suggestionsId: 'interests_suggestions',
+        tagsListId: 'interests_list',
+        hiddenInputId: 'interests_hidden',
+        tags: {{ interests | tojson }},
+        selected: {{ profile.interests | tojson if profile.interests else '[]' }}
+    };
 
-        window.technologiesConfig = {
-            inputId: 'technologies_input',
-            suggestionsId: 'technologies_suggestions',
-            tagsListId: 'technologies_list',
-            hiddenInputId: 'technologies_hidden',
-            tags: {{ technologies | tojson }},
-            selected: {{ profile.technologies | tojson if profile.technologies else '[]' }}
-        };
-    });
+    window.technologiesConfig = {
+        inputId: 'technologies_input',
+        suggestionsId: 'technologies_suggestions',
+        tagsListId: 'technologies_list',
+        hiddenInputId: 'technologies_hidden',
+        tags: {{ technologies | tojson }},
+        selected: {{ profile.technologies | tojson if profile.technologies else '[]' }}
+    };
 </script>
+<script src="{{ url_for('static', filename='js/custom-tags.js') }}"></script>
 {% endblock %}
