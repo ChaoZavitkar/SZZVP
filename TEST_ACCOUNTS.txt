@@ -1,0 +1,26 @@
+NerdMatch - Testovací účty
+==========================
+Heslo pro všechny: heslo123
+
+Email                       | Přezdívka  | Nerd Level | Zájmy
+----------------------------|------------|------------|-------------------------------
+alice.web@test.com          | Alice      | 8/10       | programování, matematika
+bob.web@test.com            | Bob        | 7/10       | videohry, komiksy
+jiri.web@test.com           | Jiří       | 6/10       | programování
+eva.test@com                | Eva        | 9/10       | matematika, AI/ML
+david.test@com              | David      | 8/10       | videohry, programování
+petra.test@com              | Petra      | 7/10       | hardware, programování
+lukas.test@com              | Lukáš      | 6/10       | programování, sci-fi
+martina.test@com            | Martina    | 5/10       | komiksy, sci-fi
+milan.test@com              | Milan      | 8/10       | matematika, hardware
+katarina.test@com           | Katarina   | 6/10       | programování, matematika
+radek.test@com              | Radek      | 7/10       | programování, hardware
+simona.test@com             | Simona     | 5/10       | komiksy, sci-fi
+vladimir.test@com           | Vladimír   | 8/10       | hardware, matematika
+anna.test@com               | Anna       | 4/10       | sci-fi, videohry
+petr.test@com               | Petr       | 9/10       | hardware, matematika
+michaela.test@com           | Michaela   | 6/10       | programování, komiksy
+viktor.test@com             | Viktor     | 9/10       | matematika, AI/ML
+agata.test@com              | Agata      | 7/10       | programování, hardware
+igor.test@com               | Igor       | 9/10       | AI/ML, matematika
+juliana.test@com            | Juliana    | 8/10       | hardware, programování
