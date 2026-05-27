@@ -1,12 +1,26 @@
 # NerdMatch - Testovací účty v databázi
-# Format: email | heslo | profil_nickname | nerd_level | zájmy
+# Format: email | heslo | profil_nickname | nerd_level | bio
 
-AKTIVNÍ UŽIVATELÉ:
-alice@example.com | Alice123!@ | Alice | 8 | programování, sci-fi
-bob@example.com | Bob123!@ | Bob | 6 | videohry, matematika
+AKTIVNÍ UŽIVATELÉ (zjednodušená LIKES architektura):
 
-STATUS: Alice si lajkla Boba, Bob se ještě nepřihlásil a nelajkl Alice (není match)
+1. alice.web@test.com | heslo123 | Alice | 8 | Miluji programování
+   └─ Lajkla: Bob ❤️
+   └─ Matche: Bob (mutual match) 👥
 
-# NOVÉ ÚČTY - doplňte tady:
+2. bob.web@test.com | heslo123 | Bob | 7 | Zamilovaný do her
+   └─ Lajkl: Alice ❤️
+   └─ Matche: Alice (mutual match) 👥
 
-jiri@example.com | Jiri123!@
+3. jiri.web@test.com | heslo123 | Jiří | 6 | Web developer
+   └─ Lajkl: nikdo
+   └─ Matche: nikdo
+
+AKTUÁLNÍ STAV (poslední test_web_flow.py):
+✅ Alice ← → Bob (mutual match)
+✅ Discover: Alice vidí Jiřího, nevidí Boba
+✅ Contacts: Alice vidí Boba jako 👥 MATCH
+✅ LIKES architektura: plně funkční
+
+POZNÁMKA: Connection nody byly odstraněny, matching nyní používá přímé
+LIKES vztahy mezi User nody (podle Template příkladu). Vše je zjednodušeno
+a správně testováno.
