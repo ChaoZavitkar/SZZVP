@@ -85,9 +85,18 @@ def like_profile(target_user_id):
 
 @discover_bp.route('/discover/skip', methods=['POST'])
 def skip_profile():
-    """Přeskoč profil (na další se zobrazí automaticky)"""
+    """Přeskoč profil (zachova filtry)"""
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('auth.login'))
 
-    return redirect(url_for('discover.discover'))
+    # Zachov filtry
+    min_nerd = request.form.get('min_nerd', 0, type=int)
+    max_nerd = request.form.get('max_nerd', 10, type=int)
+    interests = request.form.getlist('interests')
+
+    url = url_for('discover.discover', min_nerd=min_nerd, max_nerd=max_nerd)
+    if interests:
+        url += f"&{'&'.join([f'interests={i}' for i in interests])}"
+
+    return redirect(url)
