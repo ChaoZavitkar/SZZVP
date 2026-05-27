@@ -21,7 +21,7 @@ def discover():
 
     db = get_db()
 
-    # Základní dotaz
+    # Základní dotaz - najdi všechny dostupné profily
     query = '''
         MATCH (user:User {id: $user_id})
         MATCH (other:User)-[:HAS_PROFILE]->(profile:Profile)
@@ -38,23 +38,34 @@ def discover():
         'max_nerd': max_nerd
     }
 
-    # Filtr podle zájmů
+    # Filtr podle zájmů - pokud jsou vybrány, profil MUSÍ mít aspoň jeden z nich
     if interests:
         query += '''
-        AND (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
-        AND interest.name IN $interests
+        MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
+        WHERE interest.name IN $interests
         '''
         params['interests'] = interests
 
-    # Vylučuj již ohodnocené profily
+    # Vyloučit profily, které si UŽIVATEL LIŽ INICIJOVAL like
+    # (tj. kde user inicioval connection)
+    # Pokud si jiný user lajkl THIS usera, stále by měl vidět ten profil
     query += '''
-        OPTIONAL MATCH (existing:Connection)
-        WHERE (user)-[:INITIATED_CONNECTION|:RECEIVED_CONNECTION]-(existing)-[:INITIATED_CONNECTION|:RECEIVED_CONNECTION]-(other)
-        AND existing.is_deleted = false
+        OPTIONAL MATCH (user)-[:INITIATED_CONNECTION]->(conn:Connection)
+        WHERE conn.is_deleted = false
+        WITH profile, other, collect(DISTINCT conn) as user_initiated_conns
 
-        WITH profile, other, existing
-        WHERE existing IS NULL
+        // Filtruj jen konekce kde user inicioval
+        WITH profile, other,
+             [c IN user_initiated_conns WHERE c IS NOT NULL] as initiated_connections
 
+        // Najdi konekce mezi user a other (obě strany)
+        OPTIONAL MATCH (user)-[:INITIATED_CONNECTION]->(initiated:Connection)<-[:RECEIVED_CONNECTION]-(other)
+        WHERE initiated.is_deleted = false
+
+        WITH profile, other, initiated
+        WHERE initiated IS NULL  // Vyloučit jen ty, kde USER inicioval
+
+        // Nyní vezmi všechny zájmy a technologie profilu
         OPTIONAL MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
         OPTIONAL MATCH (profile)-[:LIKES_TECHNOLOGY]->(tech:Technology)
 

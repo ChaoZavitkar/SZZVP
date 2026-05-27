@@ -8,3 +8,5 @@ bob@example.com | Bob123!@ | Bob | 6 | videohry, matematika
 STATUS: Alice si lajkla Boba, Bob se ještě nepřihlásil a nelajkl Alice (není match)
 
 # NOVÉ ÚČTY - doplňte tady:
+
+jiri@example.com | Jiri123!@
