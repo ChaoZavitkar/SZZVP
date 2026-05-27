@@ -124,26 +124,25 @@
             </div>
             {% endif %}
 
+            <!-- Forms (hidden) -->
+            <form id="skip-form" method="POST" action="{{ url_for('discover.skip_profile', target_user_id=profile.user_id) }}" style="display: none;">
+                <input type="hidden" name="min_nerd" value="{{ min_nerd }}">
+                <input type="hidden" name="max_nerd" value="{{ max_nerd }}">
+                {% for interest in selected_interests %}
+                <input type="hidden" name="interests" value="{{ interest }}">
+                {% endfor %}
+            </form>
+
+            <form id="like-form" method="POST" action="{{ url_for('discover.like_profile', target_user_id=profile.user_id) }}" style="display: none;">
+                <input type="hidden" name="min_nerd" value="{{ min_nerd }}">
+                <input type="hidden" name="max_nerd" value="{{ max_nerd }}">
+                {% for interest in selected_interests %}
+                <input type="hidden" name="interests" value="{{ interest }}">
+                {% endfor %}
+            </form>
+
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <form method="POST" action="{{ url_for('discover.skip_profile', target_user_id=profile.user_id) }}" style="display: none;">
-                    <input type="hidden" name="min_nerd" value="{{ min_nerd }}">
-                    <input type="hidden" name="max_nerd" value="{{ max_nerd }}">
-                    {% for interest in selected_interests %}
-                    <input type="hidden" name="interests" value="{{ interest }}">
-                    {% endfor %}
-                    <button type="submit"></button>
-                </form>
-
-                <form method="POST" action="{{ url_for('discover.like_profile', target_user_id=profile.user_id) }}" style="display: none;">
-                    <input type="hidden" name="min_nerd" value="{{ min_nerd }}">
-                    <input type="hidden" name="max_nerd" value="{{ max_nerd }}">
-                    {% for interest in selected_interests %}
-                    <input type="hidden" name="interests" value="{{ interest }}">
-                    {% endfor %}
-                    <button type="submit"></button>
-                </form>
-
                 <button type="button" class="btn-action btn-skip" title="Přeskočit (→ nebo swipe left)">👎</button>
                 <button type="button" class="btn-action btn-like" title="Zaujalo mě (← nebo swipe right)">❤️</button>
             </div>

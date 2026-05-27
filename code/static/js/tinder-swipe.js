@@ -131,9 +131,11 @@ class TinderSwipe {
         this.card.classList.add('swipe-left');
         this.showLoadingState();
         setTimeout(() => {
-            const skipBtn = document.querySelector('.btn-skip form');
-            if (skipBtn) {
-                skipBtn.submit();
+            const skipForm = document.getElementById('skip-form');
+            if (skipForm) {
+                skipForm.submit();
+            } else {
+                console.warn('Skip form not found!');
             }
         }, 300);
     }
@@ -146,9 +148,11 @@ class TinderSwipe {
         this.card.classList.add('swipe-right');
         this.showLoadingState();
         setTimeout(() => {
-            const likeBtn = document.querySelector('.btn-like form');
-            if (likeBtn) {
-                likeBtn.submit();
+            const likeForm = document.getElementById('like-form');
+            if (likeForm) {
+                likeForm.submit();
+            } else {
+                console.warn('Like form not found!');
             }
         }, 300);
     }
