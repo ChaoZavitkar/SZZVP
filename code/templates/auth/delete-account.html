@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Smazání účtu - NerdMatch{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="alert alert-danger" role="alert">
+            <h4>⚠️ Smazání účtu</h4>
+            <p>Tato akce je <strong>nevratná</strong>. Všechna vaša data budou trvale smazána.</p>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Potvrďte smazání</h5>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Potvrzení hesla:</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="confirm" name="confirm">
+                        <label class="form-check-label" for="confirm">
+                            Rozumím, že tato akce je nevratná
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Smazat účet</button>
+                    <a href="/" class="btn btn-secondary">Zrušit</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

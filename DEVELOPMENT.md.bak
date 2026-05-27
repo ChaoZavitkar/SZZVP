@@ -1,0 +1,1005 @@
+# 🚀 DEVELOPMENT PLAN - NerdMatch Aplikace
+
+## 📋 Shrnutí projektu
+
+**Aplikace:** NerdMatch - Seznamka/sociální síť pro nerdy  
+**Tech Stack:** Flask (Python) + Neo4j (grafová DB) + Docker  
+**Cíl:** Vytvoření webové aplikace pro seznamování se zaměřením na lidi se zájmem o technologie, vědu, hry, sci-fi, fantasy, matematiku, komiksy atd.
+
+**Poznámka:** Toto je školní projekt pro předmět KI/SZZVP. Podrobné zadání viz [Zadání - Vývoj webové aplikace.pdf](Zadání%20-%20Vývoj%20webové%20aplikace.pdf).
+
+---
+
+# 📐 DATOVÝ MODEL (Neo4j)
+
+## Architektonická rozhodnutí
+
+✅ **User Management:** Modulární (User + Account + Profile oddělené)  
+✅ **Tagy (Zájmy):** Kombinace predefinovaných (systém) + user-defined (LinkedIn styl)  
+✅ **Connections:** Uzel Connection s metadata (is_match, created_at, is_deleted)  
+
+---
+
+## 🎯 Uzly a jejich atributy
+
+### 1. User
+```
+(:User {
+  id: UUID                     # Unikátní identifikátor
+  email: String                # Email (unikátní, lowercased)
+  password_hash: String        # Heslo hashováno bcryptem
+  created_at: DateTime         # Čas vytvoření účtu
+})
+
+PŘÍKLAD:
+(:User {
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  email: "petr@example.com",
+  password_hash: "$2b$12$...",
+  created_at: 2025-05-27T10:30:00Z
+})
+```
+
+### 2. Account
+```
+(:Account {
+  user_id: UUID                # Cizí klíč na User
+  last_login: DateTime         # Poslední přihlášení
+  last_activity: DateTime      # Poslední aktivita (pro timeout)
+  login_attempts: Integer      # Počet pokusů o přihlášení (anti-brute force)
+  is_deleted: Boolean          # Soft delete (pro GDPR)
+  deleted_at: DateTime         # Čas smazání
+})
+
+VZTAH: (User)-[:HAS_ACCOUNT]->(Account)
+
+PŘÍKLAD:
+(:Account {
+  user_id: "550e8400-e29b-41d4-a716-446655440000",
+  last_login: 2025-05-27T15:45:00Z,
+  last_activity: 2025-05-27T15:45:30Z,
+  login_attempts: 0,
+  is_deleted: false
+})
+```
+
+### 3. Profile
+```
+(:Profile {
+  user_id: UUID                # Cizí klíč na User
+  nickname: String             # Přezdívka (unikátní, 3-50 znaků)
+  bio: String                  # Krátký popis (0-500 znaků)
+  nerd_level: Integer          # Úroveň nerdství (0-10, slider)
+  is_public: Boolean           # Viditelnost profilu
+  created_at: DateTime
+  updated_at: DateTime
+})
+
+VZTAH: (User)-[:HAS_PROFILE]->(Profile)
+
+PŘÍKLAD:
+(:Profile {
+  user_id: "550e8400-e29b-41d4-a716-446655440000",
+  nickname: "PyWizard",
+  bio: "Python developer, sci-fi fan, tabletop RPG enthusiast",
+  nerd_level: 9,
+  is_public: true,
+  created_at: 2025-05-27T10:30:00Z,
+  updated_at: 2025-05-27T14:20:00Z
+})
+```
+
+### 4. InterestCategory (Zájmy - Predefinované NEBO User-defined)
+```
+(:InterestCategory {
+  name: String                 # Název zájmu (unikátní v rámci typu)
+  type: String                 # "SYSTEM" = my vytváříme, "USER" = uživatel vytvoří
+  created_by: UUID             # ID uživatele (jen pokud type="USER")
+  created_at: DateTime
+})
+
+VZTAHY:
+(Profile)-[:INTERESTED_IN]->(InterestCategory)
+  └─ added_at: DateTime        # Kdy si uživatel přidal tento zájem
+
+SYSTÉMOVÉ ZÁJMY (Vytvoříme při inicializaci):
+- "programování"
+- "videohry"
+- "sci-fi"
+- "fantasy"
+- "matematika"
+- "AI / Machine Learning"
+- "hardware"
+- "komiksy"
+- (a další dle zadání)
+
+PŘÍKLADY:
+(:InterestCategory {
+  name: "programování",
+  type: "SYSTEM",
+  created_at: 2025-05-27T00:00:00Z
+})
+
+(:InterestCategory {
+  name: "retro gaming",
+  type: "USER",
+  created_by: "550e8400-e29b-41d4-a716-446655440000",
+  created_at: 2025-05-27T12:00:00Z
+})
+```
+
+### 5. Technology (Technologie - Predefinované)
+```
+(:Technology {
+  name: String                 # Název (unikátní) - "Python", "Arduino", "React" atd.
+  category: String             # Kategorie (volitelně): "LANGUAGE", "FRAMEWORK", "TOOL", "HARDWARE"
+  created_at: DateTime
+})
+
+VZTAH:
+(Profile)-[:LIKES_TECHNOLOGY]->(Technology)
+  └─ added_at: DateTime        # Kdy si uživatel přidal tuto technologii
+
+SYSTÉMOVÉ TECHNOLOGIE (Vytvoříme při inicializaci):
+JAZYKY: Python, JavaScript, Java, C++, Rust, Go, Kotlin
+FRAMEWORKY: Flask, Django, React, Vue, Angular, TensorFlow
+NÁSTROJE: Docker, Kubernetes, Git, VS Code, Linux
+HARDWARE: Arduino, Raspberry Pi, STM32
+
+PŘÍKLAD:
+(:Technology {
+  name: "Python",
+  category: "LANGUAGE",
+  created_at: 2025-05-27T00:00:00Z
+})
+```
+
+### 6. Connection (Propojení - Like/Match/Skip)
+```
+(:Connection {
+  id: UUID                     # Unikátní identifikátor
+  created_at: DateTime         # Čas vytvoření
+  is_match: Boolean            # true = oboustranný interesse, false = jednostranný
+  is_deleted: Boolean          # Soft delete (když uživatel odebere kontakt)
+  deleted_at: DateTime         # Čas odstranění
+})
+
+VZTAHY:
+(User1)-[:INITIATED_CONNECTION]->(Connection)<-[:RECEIVED_CONNECTION]-(User2)
+
+LOGIKA MATCHING:
+- User_A -> User_B = User_A dá "Zaujalo mě"
+  ├─ Vytvoří se Connection
+  ├─ is_match = false (zatím jednostranný)
+  
+- User_B -> User_A = User_B také dá "Zaujalo mě"
+  ├─ Najdeme existující Connection
+  ├─ Nastavíme is_match = true (MATCH! 🔥)
+
+PŘÍKLAD:
+(:Connection {
+  id: "660e8400-e29b-41d4-a716-446655440001",
+  created_at: 2025-05-27T11:00:00Z,
+  is_match: true,
+  is_deleted: false
+})
+```
+
+---
+
+## 🔗 Diagram všech vztahů
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                      USER SECTION                          │
+├────────────────────────────────────────────────────────────┤
+
+    ┌─────────────────┐
+    │   User          │ (id, email, password_hash, created_at)
+    └─────────────────┘
+            │
+            ├─ [:HAS_ACCOUNT] ──→ Account (last_login, last_activity, is_deleted)
+            │
+            └─ [:HAS_PROFILE] ──→ Profile (nickname, bio, nerd_level)
+                                      │
+                                      ├─ [:INTERESTED_IN] ──→ InterestCategory
+                                      │                          (type: "SYSTEM" | "USER")
+                                      │
+                                      └─ [:LIKES_TECHNOLOGY] ──→ Technology
+                                                                    (category: "LANGUAGE", etc.)
+
+┌────────────────────────────────────────────────────────────┐
+│                  CONNECTION SECTION                        │
+├────────────────────────────────────────────────────────────┤
+
+    User1 ──[:INITIATED_CONNECTION]──→ Connection ←──[:RECEIVED_CONNECTION]── User2
+                                       (is_match: true/false)
+```
+
+---
+
+## 📋 Cypher DDL (Data Definition Language)
+
+```cypher
+-- ============================================
+-- INDEXY (pro rychlejší vyhledávání)
+-- ============================================
+CREATE INDEX idx_user_id ON :User(id);
+CREATE INDEX idx_user_email ON :User(email);
+CREATE INDEX idx_profile_nickname ON :Profile(nickname);
+CREATE INDEX idx_profile_user_id ON :Profile(user_id);
+CREATE INDEX idx_account_user_id ON :Account(user_id);
+CREATE INDEX idx_interest_name ON :InterestCategory(name);
+CREATE INDEX idx_technology_name ON :Technology(name);
+CREATE INDEX idx_connection_id ON :Connection(id);
+
+-- ============================================
+-- VYTVOŘENÍ SYSTEM ZÁJMŮ (Při inicializaci)
+-- ============================================
+CREATE (:InterestCategory {
+  name: "programování",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+CREATE (:InterestCategory {
+  name: "videohry",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+CREATE (:InterestCategory {
+  name: "sci-fi",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+CREATE (:InterestCategory {
+  name: "fantasy",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+CREATE (:InterestCategory {
+  name: "matematika",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+CREATE (:InterestCategory {
+  name: "AI / Machine Learning",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+CREATE (:InterestCategory {
+  name: "hardware",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+CREATE (:InterestCategory {
+  name: "komiksy",
+  type: "SYSTEM",
+  created_at: datetime()
+});
+
+-- ============================================
+-- VYTVOŘENÍ SYSTEM TECHNOLOGIÍ
+-- ============================================
+-- JAZYKY
+CREATE (:Technology {
+  name: "Python",
+  category: "LANGUAGE",
+  created_at: datetime()
+});
+
+CREATE (:Technology {
+  name: "JavaScript",
+  category: "LANGUAGE",
+  created_at: datetime()
+});
+
+CREATE (:Technology {
+  name: "Java",
+  category: "LANGUAGE",
+  created_at: datetime()
+});
+
+CREATE (:Technology {
+  name: "C++",
+  category: "LANGUAGE",
+  created_at: datetime()
+});
+
+CREATE (:Technology {
+  name: "Rust",
+  category: "LANGUAGE",
+  created_at: datetime()
+});
+
+-- FRAMEWORKY
+CREATE (:Technology {
+  name: "Flask",
+  category: "FRAMEWORK",
+  created_at: datetime()
+});
+
+CREATE (:Technology {
+  name: "Django",
+  category: "FRAMEWORK",
+  created_at: datetime()
+});
+
+CREATE (:Technology {
+  name: "React",
+  category: "FRAMEWORK",
+  created_at: datetime()
+});
+
+-- HARDWARE
+CREATE (:Technology {
+  name: "Arduino",
+  category: "HARDWARE",
+  created_at: datetime()
+});
+
+CREATE (:Technology {
+  name: "Raspberry Pi",
+  category: "HARDWARE",
+  created_at: datetime()
+});
+
+-- (Více se dá přidat později)
+```
+
+---
+
+---
+
+# 🎯 IMPLEMENTAČNÍ FÁZE
+
+## FÁZE 1️⃣ - AUTENTIZACE & ACCOUNT MANAGEMENT (PRIORITA: VELMI VYSOKÁ)
+
+Toto je **kritická část** - bez ní nic nefunguje. Všichni ostatní uživatelé na tom závisí.
+
+### 1.1 Požadavky ze zadání (2.1)
+
+- [x] Uživatel se musí přihlásit před použitím
+- [x] Registrace: email + heslo
+- [x] Validace hesla (8+ znaků, malé+velké písmeno, číslo, speciální znak)
+- [x] Heslo se hashuje (bcrypt)
+- [x] Možnost odhlášení
+- [x] Auto-logout po 5 minutách nečinnosti
+- [x] Smazání účtu + všech dat
+
+### 1.2 Backend - Autentizace
+#### 1.2.1 Registrace (POST `/register`)
+
+```python
+VSTUP:
+  email: str                   # Format: xxx@xxx.xxx
+  password: str                # 8+ znaků, podmínky níže
+  password_confirm: str        # Potvrzení
+
+VALIDACE:
+  ✓ Email existuje?           → Error: "Email již používán"
+  ✓ Email je platný?          → Error: "Neplatný email"
+  ✓ Hesla se shodují?         → Error: "Hesla se neshodují"
+  ✓ Délka hesla >= 8?         → Error: "Heslo musí mít alespoň 8 znaků"
+  ✓ Obsahuje malé písmeno?    → Error: "..."
+  ✓ Obsahuje velké písmeno?   → Error: "..."
+  ✓ Obsahuje číslici?         → Error: "..."
+  ✓ Obsahuje speciální znak?  → Error: "..."
+
+AKCE:
+  1. Hashovat heslo (bcrypt)
+  2. Vytvořit User uzel
+  3. Vytvořit Account uzel
+  4. Propojit (User)-[:HAS_ACCOUNT]->(Account)
+  5. Flash: "Účet vytvořen! Přihlaste se."
+  6. Redirect: /login
+
+CYPHER:
+  CREATE (user:User {
+    id: uuid(),
+    email: $email,
+    password_hash: $password_hash,
+    created_at: datetime()
+  })
+  CREATE (account:Account {
+    user_id: user.id,
+    last_login: null,
+    last_activity: null,
+    login_attempts: 0,
+    is_deleted: false
+  })
+  CREATE (user)-[:HAS_ACCOUNT]->(account)
+```
+
+#### 1.2.2 Přihlášení (POST `/login`)
+
+```python
+VSTUP:
+  email: str
+  password: str
+
+VALIDACE:
+  1. Najít uživatele (User {email: $email})
+  2. Ověřit heslo (bcrypt.check())
+  3. Kontrola is_deleted
+  4. Kontrola login_attempts (anti-brute force)
+
+AKCE:
+  1. Nastavit session["user_id"] = user.id
+  2. Nastavit last_login = nyní
+  3. Resetovat login_attempts = 0
+  4. Flash: "Přihlášeni!"
+  5. Redirect: / (dashboard)
+
+CYPHER:
+  MATCH (user:User {email: $email})
+  MATCH (user)-[:HAS_ACCOUNT]->(account)
+  WHERE account.is_deleted = false
+  SET account.last_login = datetime()
+  SET account.last_activity = datetime()
+  SET account.login_attempts = 0
+  RETURN user
+```
+
+#### 1.2.3 Odhlášení (GET `/logout`)
+
+```python
+AKCE:
+  1. Vymazat session["user_id"]
+  2. Flash: "Odhlášeni!"
+  3. Redirect: /login
+```
+
+#### 1.2.4 Session Management (Middleware)
+
+```python
+TIMEOUT: 5 minut
+
+LOGIKA:
+  - Každý request: kontrola session["last_activity"]
+  - Pokud (nyní - last_activity) > 300 sekund:
+    ├─ Vymazat session
+    ├─ Flash: "Relace vypršela"
+    └─ Redirect: /login
+  - Pokud session OK:
+    ├─ Aktualizovat last_activity v DB
+    └─ Pokračovat
+
+IMPLEMENTACE:
+  Decorator @require_login
+  Middleware before_request
+```
+
+#### 1.2.5 Smazání účtu (POST `/delete-account`)
+
+```python
+VSTUP:
+  password: str                # Konfirmace hesla
+  confirm: str = "yes"         # Double-check
+
+VALIDACE:
+  1. Ověřit heslo
+  2. Ověřit checkbox
+
+AKCE:
+  1. SET account.is_deleted = true
+  2. SET account.deleted_at = datetime()
+  3. Smazat Profile (či alespoň soft-delete)
+  4. Smazat Connections (soft-delete)
+  5. Vymazat session
+  6. Flash: "Účet smazán"
+  7. Redirect: /login
+
+CYPHER:
+  MATCH (user:User {id: $user_id})
+  MATCH (user)-[:HAS_ACCOUNT]->(account)
+  MATCH (user)-[:HAS_PROFILE]->(profile)
+  SET account.is_deleted = true
+  SET account.deleted_at = datetime()
+  DETACH DELETE profile
+  -- Connections si ponechají, ale s is_deleted = true
+```
+
+### 1.3 Frontend - Autentizace
+
+#### 1.3.1 Login stránka (`/login`)
+
+```
+┌─────────────────────────────────────────┐
+│         NerdMatch - Přihlášení          │
+├─────────────────────────────────────────┤
+│                                         │
+│  Email:                                 │
+│  [_________________________]             │
+│                                         │
+│  Heslo:                                 │
+│  [_________________________]             │
+│                                         │
+│  [    Přihlášit se    ]  [Registrovat]  │
+│                                         │
+│  Chyby (pokud nějaké):                  │
+│  ⚠️ "Nesprávný email nebo heslo"        │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+KOMPONENTY:
+- [ ] Input: email (type="email")
+- [ ] Input: heslo (type="password")
+- [ ] Tlačítko: "Přihlášit se" (POST /login)
+- [ ] Link: "Registrovat se" → /register
+- [ ] Flash messages (errors)
+
+#### 1.3.2 Registrace stránka (`/register`)
+
+```
+┌──────────────────────────────────────────┐
+│       NerdMatch - Registrace             │
+├──────────────────────────────────────────┤
+│                                          │
+│  Email:                                  │
+│  [__________________________]             │
+│  ❌ Neplatný email (pokud je chyba)     │
+│                                          │
+│  Heslo:                                  │
+│  [__________________________]             │
+│  Validace hesla:                         │
+│  ✓ Alespoň 8 znaků                      │
+│  ✓ Obsahuje malé písmeno                │
+│  ✗ Obsahuje velké písmeno               │
+│  ✓ Obsahuje číslici                     │
+│  ✗ Obsahuje speciální znak (!@#$...)    │
+│                                          │
+│  Potvrzení hesla:                        │
+│  [__________________________]             │
+│  ✓ Hesla se shodují                     │
+│                                          │
+│  [    Vytvořit účet    ]                 │
+│                                          │
+│  Už máte účet? [Přihlaste se]            │
+│                                          │
+└──────────────────────────────────────────┘
+```
+
+KOMPONENTY:
+- [ ] Input: email (type="email")
+- [ ] Input: heslo (type="password")
+- [ ] Živá validace hesla (JS):
+  - Kontrola délky
+  - Kontrola malých písmen (RegExp: /[a-z]/)
+  - Kontrola velkých písmen (RegExp: /[A-Z]/)
+  - Kontrola číslic (RegExp: /[0-9]/)
+  - Kontrola speciálních znaků (RegExp: /[!@#$%^&*]/)
+  - Kontrola shody hesel
+- [ ] Tlačítko: "Vytvořit účet" (POST /register, disabled pokud validace neprošla)
+- [ ] Link: "Přihlaste se" → /login
+- [ ] Flash messages (errors)
+
+#### 1.3.3 Защита stránek (Middleware)
+
+```python
+@require_login
+def algumas_strana():
+    # Kontrola: je uživatel přihlášen?
+    # Pokud NE: redirect /login
+    # Pokud ANO: pokračovat
+```
+
+APLIKACE NA:
+- Všechny `/dashboard`, `/profile`, `/discover`, `/contacts` stránky
+
+---
+
+## FÁZE 2️⃣ - PROFIL UŽIVATELE (PRIORITA: VELMI VYSOKÁ)
+
+Bez profilu se nemohou ostatní uživatelé seznámit!
+
+### 2.1 Požadavky ze zadání (2.4)
+
+- [x] Přezdívka (editable)
+- [x] Bio / krátký popis (editable)
+- [x] Zájmy - výběr z možností, alespoň jeden povinný (editable)
+- [x] Oblíbené technologie - volitelné (editable)
+- [x] Úroveň nerdství - 0-10, slider (editable)
+
+### 2.2 Backend - Profil management
+
+#### 2.2.1 GET `/profile` - Zobrazení profilu
+
+```python
+AKCE:
+  1. Najít User → Account → Profile → Zájmy → Technologie
+  2. Vrátit šabloně všechny údaje
+  3. Zobrazit v editovatelné formě
+
+CYPHER:
+  MATCH (user:User {id: $user_id})
+  MATCH (user)-[:HAS_PROFILE]->(profile:Profile)
+  OPTIONAL MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
+  OPTIONAL MATCH (profile)-[:LIKES_TECHNOLOGY]->(tech:Technology)
+  RETURN profile, collect(interest.name) as interests, collect(tech.name) as technologies
+```
+
+#### 2.2.2 POST `/profile/edit` - Editace profilu
+
+```python
+VSTUP:
+  nickname: str              # 3-50 znaků
+  bio: str                   # 0-500 znaků
+  interests: list[str]       # Min 1, seznam názvů kategorií
+  technologies: list[str]    # Můžu být prázdné
+  nerd_level: int            # 0-10
+
+VALIDACE:
+  ✓ nickname délka 3-50?     → Error
+  ✓ bio délka 0-500?         → Error
+  ✓ interests ne-empty?      → Error
+  ✓ nerd_level 0-10?         → Error
+
+AKCE:
+  1. Aktualizovat Profile uzel
+  2. Smazat staré zájmy (DETACH DELETE)
+  3. Vytvořit nové vztahy (INTERESTED_IN)
+  4. Smazat staré technologie
+  5. Vytvořit nové vztahy (LIKES_TECHNOLOGY)
+  6. Flash: "Profil aktualizován"
+  7. Redirect: /profile
+
+CYPHER:
+  MATCH (user:User {id: $user_id})-[:HAS_PROFILE]->(profile:Profile)
+  SET profile.nickname = $nickname
+  SET profile.bio = $bio
+  SET profile.nerd_level = $nerd_level
+  SET profile.updated_at = datetime()
+  
+  OPTIONAL MATCH (profile)-[r:INTERESTED_IN]->()
+  DELETE r
+  
+  WITH profile
+  UNWIND $interests as interest_name
+  MATCH (interest:InterestCategory {name: interest_name})
+  CREATE (profile)-[:INTERESTED_IN {added_at: datetime()}]->(interest)
+  
+  -- Stejně pro technologie
+```
+
+### 2.3 Frontend - Profil stránka
+
+```
+┌──────────────────────────────────────────┐
+│          Můj profil                      │
+├──────────────────────────────────────────┤
+│                                          │
+│  Přezdívka:                              │
+│  [________________] (3-50 znaků)         │
+│                                          │
+│  Bio:                                    │
+│  [________________                    ]  │
+│  (max 500 znaků)                         │
+│                                          │
+│  Úroveň nerdství:                        │
+│  [■□□□□□□□□□] 3/10                       │
+│                                          │
+│  Zájmy: (min. 1)                         │
+│  ☑ Programování                          │
+│  ☑ Videohry                              │
+│  ☐ Sci-fi                                │
+│  ☐ Fantasy                               │
+│  ☐ Matematika                            │
+│  ☐ AI / Machine Learning                 │
+│  ☐ Hardware                              │
+│  ☐ Komiksy                               │
+│                                          │
+│  Technologie: (volitelné)                │
+│  [Python, Flask, React - multi-select]   │
+│                                          │
+│  [      Uložit změny      ]               │
+│                                          │
+└──────────────────────────────────────────┘
+```
+
+KOMPONENTY:
+- [ ] Input: nickname
+- [ ] Textarea: bio
+- [ ] Range input (slider): nerd_level
+- [ ] Checkboxes: zájmy (dynamicky načtené z DB)
+- [ ] Multi-select: technologie (dynamicky)
+- [ ] Tlačítko: "Uložit"
+- [ ] JS validace (live feedback)
+
+---
+
+## FÁZE 3️⃣ - DASHBOARD (PRIORITA: STŘEDNÍ)
+
+### 3.1 Požadavky ze zadání (2.2)
+
+- [x] Počet navázaných kontaktů
+- [x] Počet zobrazených profilů
+- [x] Počet matchů
+- [x] Bonus: Grafické zobrazení (charts)
+
+#### 3.1 Backend - Dashboard data
+- [ ] Počet navázaných kontaktů (wszystkie connection kde user je buď sender nebo receiver)
+- [ ] Počet zobrazených profilů (like + skip)
+- [ ] Počet matchů (connections kde is_match = true)
+
+#### 3.2 Frontend - Dashboard
+- [ ] Přivítání uživatele
+- [ ] 3 statistiky (text + čísla)
+- [ ] Bonus: Grafické zobrazení (charts)
+
+---
+
+### FÁZE 4️⃣ - VYHLEDÁVÁNÍ PROFILŮ (PRIORITA: VYSOKÁ)
+
+#### 4.1 Backend - Vyhledávání
+- [ ] GET /discover
+  - Dotaz na Neo4j: vrátí seznam uživatelů
+  - Filtrování podle:
+    - Zájmů (Cypher: MATCH ...[:INTERESTED_IN]->interest WHERE interest.name IN [...]
+    - Nerd level (min/max slider)
+    - Technologií
+  - Pagination (10 profilů na stránku)
+  - Vyloučení: vlastní profil, již ohodnocení uživatelé
+  
+- [ ] POST /discover/like
+  - Vytvoření Connection (sender_id, receiver_id)
+  - Kontrola na mutual like (match?)
+  
+- [ ] POST /discover/skip
+  - Zaznamenání skip (nebudeme zobrazovat znovu)
+
+#### 4.2 Frontend - Discover stránka
+- [ ] Filtry (sidebar nebo collapsed)
+  - Zájmy (checkboxes)
+  - Nerd level (range slider)
+  - Technologie (multi-select)
+  
+- [ ] Hlavní obsah
+  - Profil card (přezdívka, bio, zájmy, nerd level)
+  - Tlačítka: "Zaujalo mě" + "Přeskočit"
+  - Počet zbývajících profilů
+  
+- [ ] Pagination
+
+---
+
+### FÁZE 5️⃣ - KONTAKTY (PRIORITA: STŘEDNÍ)
+
+#### 5.1 Backend - Kontakty
+- [ ] GET /contacts
+  - Vrátí všechny connections uživatele
+  - Třídění: matche nahoře, pak jednostranné
+  - Informace: partner profil, typ (match/jednostranný), datum
+  
+- [ ] DELETE /contacts/<id>
+  - Smazání kontaktu (soft delete)
+
+#### 5.2 Frontend - Kontakty stránka
+- [ ] Seznam kontaktů (cards nebo tabulka)
+- [ ] Každý kontakt obsahuje:
+  - Profilovou fotku/info (přezdívka, bio)
+  - Badge "MATCH" nebo "Jednostranný"
+  - Datum navázání
+  - Tlačítko "Odebrat"
+
+---
+
+### FÁZE 6️⃣ - NAVIGACE & LAYOUT (PRIORITA: STŘEDNÍ)
+
+#### 6.1 Frontend - Společné komponenty
+- [ ] Navbar (na všech stránkách)
+  - Logo/název aplikace
+  - Přehled → /
+  - Objevuj → /discover
+  - Kontakty → /contacts
+  - Profil → /profile
+  - Odhlášení → /logout
+  
+- [ ] Footer
+  - Copyright, info
+
+#### 6.2 Frontend - 404, Error pages
+- [ ] 404 stránka
+- [ ] 500 stránka
+- [ ] Chybové zprávy (flashy)
+
+---
+
+## 📂 Nová struktura projektu
+
+```
+code/
+├── app.py                          # Hlavní aplikace + routes
+│
+├── config.py                       # Konfigurace (SECRET_KEY, SESSION_TIMEOUT atd.)
+├── requirements.txt                # Nové závislosti (bcrypt, ...)
+│
+├── models/                         # Logika pro práci s DB
+│   ├── __init__.py
+│   ├── user.py                    # User model (registrace, login, pwd hash)
+│   ├── profile.py                 # UserProfile model
+│   ├── connection.py              # Connection model (likes, matches)
+│   └── database.py                # Neo4j connection handler
+│
+├── utils/                         # Utility funkce
+│   ├── __init__.py
+│   ├── validators.py              # Validace emailu, hesla atd.
+│   ├── decorators.py              # @login_required atd.
+│   └── constants.py               # INTERESTS, TECHNOLOGIES atd.
+│
+├── routes/                        # Flask routes
+│   ├── __init__.py
+│   ├── auth.py                    # /login, /register, /logout
+│   ├── dashboard.py               # /
+│   ├── discover.py                # /discover, /discover/like
+│   ├── contacts.py                # /contacts
+│   └── profile.py                 # /profile, /profile/edit
+│
+├── templates/
+│   ├── base.html                  # Navbar, footer, base layout
+│   ├── auth/
+│   │   ├── login.html
+│   │   └── register.html
+│   ├── dashboard.html
+│   ├── discover.html
+│   ├── contacts.html
+│   └── profile.html
+│
+├── static/
+│   ├── css/
+│   │   └── style.css              # Vlastní styly (Bootstrap + custom)
+│   └── js/
+│       └── main.js                # Validace, interakce atd.
+│
+└── tests/                         # Unit testy (volitelné)
+    ├── test_auth.py
+    └── test_models.py
+```
+
+---
+
+## 🔧 Nové závislosti
+
+```
+Flask==3.0.0
+Flask-Session==0.5.0               # Session management
+py2neo==2021.2.4
+bcrypt==4.1.0                      # Password hashing
+email-validator==2.1.0             # Email validation
+python-dotenv==1.0.0               # ENV variables
+```
+
+---
+
+## 📊 Cypher dotazy - které budeme potřebovat
+
+```cypher
+# Registrace - vytvoření uživatele
+CREATE (user:User {
+  id: $id,
+  email: $email,
+  password_hash: $password_hash,
+  created_at: datetime()
+})
+
+# Login - ověření uživatele
+MATCH (user:User)
+WHERE user.email = $email
+RETURN user
+
+# Vytvoření profilu
+CREATE (profile:UserProfile {
+  user_id: $user_id,
+  nickname: $nickname,
+  bio: $bio,
+  nerd_level: $nerd_level,
+  created_at: datetime()
+})
+
+# Propojení profilu s uživatelem
+MATCH (user:User {id: $user_id})
+MATCH (profile:UserProfile {user_id: $user_id})
+CREATE (user)-[:HAS_PROFILE]->(profile)
+
+# Přidání zájmů
+MATCH (profile:UserProfile {user_id: $user_id})
+MATCH (interest:Interest {name: $interest_name})
+CREATE (profile)-[:INTERESTED_IN]->(interest)
+
+# Vyhledávání profilů (bez filtrů)
+MATCH (other:User)-[:HAS_PROFILE]->(profile:UserProfile)
+WHERE other.id <> $current_user_id
+AND other.is_deleted <> true
+RETURN profile, other
+LIMIT 10
+
+# Vyhledávání s filtrováním
+MATCH (other:User)-[:HAS_PROFILE]->(profile:UserProfile)
+WHERE other.id <> $current_user_id
+AND profile.nerd_level >= $min_nerd
+AND profile.nerd_level <= $max_nerd
+AND (profile)-[:INTERESTED_IN]->(i:Interest)
+AND i.name IN $interests
+RETURN profile, other
+LIMIT 10
+
+# Vytvoření like
+MATCH (sender:User {id: $sender_id})
+MATCH (receiver:User {id: $receiver_id})
+CREATE (conn:Connection {
+  id: $id,
+  sender_id: $sender_id,
+  receiver_id: $receiver_id,
+  is_match: false,
+  created_at: datetime()
+})
+
+# Kontrola na match (oboustranný like)
+MATCH (c1:Connection)
+WHERE c1.sender_id = $user_a
+AND c1.receiver_id = $user_b
+MATCH (c2:Connection)
+WHERE c2.sender_id = $user_b
+AND c2.receiver_id = $user_a
+RETURN true
+
+# Načtení matchů
+MATCH (conn:Connection)
+WHERE (conn.sender_id = $user_id OR conn.receiver_id = $user_id)
+AND conn.is_match = true
+RETURN conn
+```
+
+---
+
+## 🎯 Priority kroky
+
+### PRVNÍ TÝDEN:
+1. Fáze 1 - Autentizace (login, registrace, validation)
+2. Fáze 2 - Profil uživatele
+3. Fáze 3 - Dashboard
+
+### DRUHÝ TÝDEN:
+4. Fáze 4 - Vyhledávání a like/skip
+5. Fáze 5 - Kontakty
+6. Fáze 6 - Styling a UX
+
+### TŘETÍ TÝDEN:
+7. Testování
+8. Bugfixing
+9. Dokumentace (README)
+
+---
+
+## ✅ Checklist na konci
+
+- [ ] Všechny funkcionality ze zadání fungují
+- [ ] Heslo je hashováno (bcrypt)
+- [ ] Session timeout funguje (5 minut)
+- [ ] Profil je editovatelný
+- [ ] Filtrování funguje
+- [ ] Matche se detekují správně
+- [ ] Kontakty lze odstranit
+- [ ] Účet lze smazat
+- [ ] UI je použitelné (aspoň základní styling)
+- [ ] README je napsaný
+- [ ] Aplikace se spustí přes docker-compose
+
+---
+
+## 📝 Poznámky
+
+- Používáme Neo4j (je to vhodné pro graf vztahů)
+- Session management přes Flask-Session
+- Hesla budeme hashovat přes bcrypt
+- Měli bychom měřit "zobrazené profily" (skip + like)
+- Pro smazání dat použijeme soft delete (is_deleted flag)
+- URL struktura by měla být RESTful
+
