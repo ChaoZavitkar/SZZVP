@@ -56,32 +56,34 @@ def index():
 
     db = get_db()
 
-    # Počet všech kontaktů
+    # Počet všech kontaktů (LIKES vztahy - oba směry)
     total_contacts = db.query('''
         MATCH (user:User {id: $user_id})
-        MATCH (user)-[:INITIATED_CONNECTION|:RECEIVED_CONNECTION]-(conn:Connection)
-        WHERE conn.is_deleted = false
-        RETURN count(DISTINCT conn) as total_contacts
+        MATCH (user)-[:LIKES|:LIKES]-(other:User)
+        WHERE other.id <> user.id
+        RETURN count(DISTINCT other) as total_contacts
     ''', user_id=user_id)
     total_contacts = total_contacts[0]['total_contacts'] if total_contacts else 0
 
-    # Počet matchů (oboustranný zájem)
+    # Počet matchů (oboustranný zájem - mutual likes)
     matches_count = db.query('''
         MATCH (user:User {id: $user_id})
-        MATCH (user)-[:INITIATED_CONNECTION|:RECEIVED_CONNECTION]-(conn:Connection)
-        WHERE conn.is_match = true
-        AND conn.is_deleted = false
-        RETURN count(DISTINCT conn) as matches_count
+        MATCH (user)-[:LIKES]->(other:User)-[:LIKES]->(user)
+        RETURN count(DISTINCT other) as matches_count
     ''', user_id=user_id)
     matches_count = matches_count[0]['matches_count'] if matches_count else 0
 
-    # Počet všech viditelných uživatelů
+    # Počet všech dostupných profilů (kromě těch, které si lajknul)
     visible_profiles = db.query('''
+        MATCH (user:User {id: $user_id})
         MATCH (other:User)
-        MATCH (other)-[:HAS_ACCOUNT]->(account)
-        WHERE other.id <> $user_id
-        AND account.is_deleted = false
-        RETURN count(other) as visible_profiles
+        WHERE other.id <> user.id
+        OPTIONAL MATCH (other)-[:HAS_ACCOUNT]->(account)
+        WHERE account.is_deleted = false
+        OPTIONAL MATCH (user)-[:LIKES]->(other)
+        WITH other, account
+        WHERE account IS NOT NULL AND NOT (user)-[:LIKES]->(other)
+        RETURN count(DISTINCT other) as visible_profiles
     ''', user_id=user_id)
     visible_profiles = visible_profiles[0]['visible_profiles'] if visible_profiles else 0
 
