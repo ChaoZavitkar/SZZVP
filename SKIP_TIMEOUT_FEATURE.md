@@ -17,15 +17,15 @@ The `get_available_profiles()` function now excludes profiles with recent SKIP r
 AND NOT (
     EXISTS {
         MATCH (user)-[skip:SKIP]->(other)
-        WHERE duration.between(skip.created_at, datetime()) < duration({hours: $timeout_hours})
+        WHERE skip.created_at > datetime() - duration({hours: $timeout_hours})
     }
 )
 ```
 
 This checks:
 - Does a SKIP relationship exist? 
-- If yes, is it recent (created less than timeout_hours ago)?
-- If both true, exclude the profile
+- If yes, was it created after (now - timeout_hours)?
+- If both true, exclude the profile (it's still within timeout)
 
 ### 3. Timeout Expiration
 When the timeout period expires, the SKIP relationship is no longer "recent" and the profile reappears in the discover view.
