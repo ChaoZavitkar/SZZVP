@@ -184,7 +184,7 @@ class Profile:
         db = get_db()
         result = db.query('''
             MATCH (i:InterestCategory)
-            RETURN i.name as name, i.type as type, i.created_at as created_at
+            RETURN i.name as name, i.type as type
             ORDER BY
                 CASE WHEN i.type = "SYSTEM" THEN 0 ELSE 1 END ASC,
                 i.name ASC,
@@ -204,7 +204,7 @@ class Profile:
         result = db.query('''
             MATCH (t:Technology)
             WHERE t.category IS NOT NULL
-            RETURN t.name as name, t.category as category, t.created_at as created_at
+            RETURN t.name as name, t.category as category
             ORDER BY
                 CASE WHEN t.category = "USER" THEN 1 ELSE 0 END ASC,
                 t.category ASC,
