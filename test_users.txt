@@ -1,26 +1,40 @@
-# NerdMatch - Testovací účty v databázi
-# Format: email | heslo | profil_nickname | nerd_level | bio
+# NerdMatch - 20 Testovacích účtů
+# Format: email | heslo | profil_nickname | nerd_level | zájmy | technologie
 
-AKTIVNÍ UŽIVATELÉ (zjednodušená LIKES architektura):
+TESTOVACÍ DATA:
 
-1. alice.web@test.com | heslo123 | Alice | 8 | Miluji programování
-   └─ Lajkla: Bob ❤️
-   └─ Matche: Bob (mutual match) 👥
+1.  alice.web@test.com       | heslo123 | Alice       | 8/10 | programování, matematika           | Python, Git
+2.  bob.web@test.com         | heslo123 | Bob         | 7/10 | videohry, komiksy                 | Git
+3.  jiri.web@test.com        | heslo123 | Jiří        | 6/10 | programování                       | Python
+4.  eva.test@com             | heslo123 | Eva         | 9/10 | matematika, AI / Machine Learning | Python
+5.  david.test@com           | heslo123 | David       | 8/10 | videohry, programování            | Python, Git
+6.  petra.test@com           | heslo123 | Petra       | 7/10 | hardware, programování            | Docker, Git
+7.  lukas.test@com           | heslo123 | Lukáš       | 6/10 | programování, sci-fi              | JavaScript, Git
+8.  martina.test@com         | heslo123 | Martina     | 5/10 | komiksy, sci-fi                   | Git
+9.  milan.test@com           | heslo123 | Milan       | 8/10 | matematika, hardware              | Docker
+10. katarina.test@com        | heslo123 | Katarina    | 6/10 | programování, matematika          | Git
+11. radek.test@com           | heslo123 | Radek       | 7/10 | programování, hardware            | Python, Docker
+12. simona.test@com          | heslo123 | Simona      | 5/10 | komiksy, sci-fi                   | Git
+13. vladimir.test@com        | heslo123 | Vladimír    | 8/10 | hardware, matematika              | Docker
+14. anna.test@com            | heslo123 | Anna        | 4/10 | sci-fi, videohry                  | Git
+15. petr.test@com            | heslo123 | Petr        | 9/10 | hardware, matematika              | Docker, Git
+16. michaela.test@com        | heslo123 | Michaela    | 6/10 | programování, komiksy             | Git
+17. viktor.test@com          | heslo123 | Viktor      | 9/10 | AI / Machine Learning, matematika | Python
+18. agata.test@com           | heslo123 | Agata       | 7/10 | programování, hardware            | Python, Docker
+19. igor.test@com            | heslo123 | Igor        | 9/10 | AI / Machine Learning, matematika | Python
+20. juliana.test@com         | heslo123 | Juliana     | 8/10 | hardware, programování            | Docker, Git
 
-2. bob.web@test.com | heslo123 | Bob | 7 | Zamilovaný do her
-   └─ Lajkl: Alice ❤️
-   └─ Matche: Alice (mutual match) 👥
+AKTUÁLNÍ STAV MATCHŮ:
+✅ Alice ↔ Bob (mutual match)
+❌ Jiří → Bob (one-way)
 
-3. jiri.web@test.com | heslo123 | Jiří | 6 | Web developer
-   └─ Lajkl: nikdo
-   └─ Matche: nikdo
+TESTOVACÍ SCÉNÁŘE:
+1. Přihlášení a discover - zkusit různé filtry na nerd_level a zájmy
+2. Vytváření matchů - zjistit kolik mutual matchů můžete vytvořit
+3. Filtrování - testovat kombinace zájmů a technologií
+4. Kontakty - zobrazení vzájemných matchů, jednostranných zájmů a obdivovatelů
 
-AKTUÁLNÍ STAV (poslední test_web_flow.py):
-✅ Alice ← → Bob (mutual match)
-✅ Discover: Alice vidí Jiřího, nevidí Boba
-✅ Contacts: Alice vidí Boba jako 👥 MATCH
-✅ LIKES architektura: plně funkční
-
-POZNÁMKA: Connection nody byly odstraněny, matching nyní používá přímé
-LIKES vztahy mezi User nody (podle Template příkladu). Vše je zjednodušeno
-a správně testováno.
+POZNÁMKA:
+- Všechny profily mají zájmy a technologie pro realističtější testování
+- Nerd levely jsou rozmanité (4-9), což umožňuje testovat filtrování
+- Profily pokrývají různé IT obory pro zajímavější matchování
