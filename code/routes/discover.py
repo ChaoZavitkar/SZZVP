@@ -2,14 +2,18 @@
 
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from random import choice
+from config import Config
 from models.database import get_db
 from models.connection import Connection
 from models.profile import Profile
 
 discover_bp = Blueprint('discover', __name__)
 
-def get_available_profiles(user_id, db, min_nerd=0, max_nerd=10, interests=None):
+def get_available_profiles(user_id, db, min_nerd=0, max_nerd=10, interests=None, skip_timeout_hours=None):
     """Vrať dostupné profily (které jsme si nelajkli) - podle Template logiky"""
+    if skip_timeout_hours is None:
+        skip_timeout_hours = Config.SKIP_TIMEOUT_HOURS
+
     query = '''
         MATCH (user:User {id: $user_id})
         MATCH (other:User)-[:HAS_PROFILE]->(profile:Profile)
@@ -19,9 +23,15 @@ def get_available_profiles(user_id, db, min_nerd=0, max_nerd=10, interests=None)
         AND profile.nerd_level >= $min_nerd
         AND profile.nerd_level <= $max_nerd
         AND NOT (user)-[:LIKES]->(other)
+        AND NOT (
+            EXISTS {
+                MATCH (user)-[skip:SKIP]->(other)
+                WHERE duration.between(skip.created_at, datetime()) < duration({hours: $timeout_hours})
+            }
+        )
     '''
 
-    params = {'user_id': user_id, 'min_nerd': min_nerd, 'max_nerd': max_nerd}
+    params = {'user_id': user_id, 'min_nerd': min_nerd, 'max_nerd': max_nerd, 'timeout_hours': skip_timeout_hours}
 
     if interests:
         # Profil MUSÍ mít VŠECHNY vybrané zájmy
@@ -98,12 +108,15 @@ def like_profile(target_user_id):
 
     return redirect(url)
 
-@discover_bp.route('/discover/skip', methods=['POST'])
-def skip_profile():
-    """Přeskoč profil (zachova filtry)"""
+@discover_bp.route('/discover/skip/<target_user_id>', methods=['POST'])
+def skip_profile(target_user_id):
+    """Přeskoč profil (zachova filtry a vytvori SKIP vztah)"""
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('auth.login'))
+
+    # Zapiš skip
+    Connection.skip(user_id, target_user_id)
 
     # Zachov filtry
     min_nerd = request.form.get('min_nerd', 0, type=int)

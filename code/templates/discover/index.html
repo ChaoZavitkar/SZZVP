@@ -95,7 +95,7 @@
 
                     <div class="col-md-4 text-center">
                         <div class="d-grid gap-2">
-                            <form method="POST" action="{{ url_for('discover.skip_profile') }}">
+                            <form method="POST" action="{{ url_for('discover.skip_profile', target_user_id=profile.user_id) }}">
                                 <input type="hidden" name="min_nerd" value="{{ min_nerd }}">
                                 <input type="hidden" name="max_nerd" value="{{ max_nerd }}">
                                 {% for interest in selected_interests %}

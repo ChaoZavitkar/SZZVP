@@ -31,3 +31,6 @@ class Config:
     MAX_BIO_LENGTH = 500
     NERD_LEVEL_MIN = 0
     NERD_LEVEL_MAX = 10
+
+    # Discover - skipped profile timeout
+    SKIP_TIMEOUT_HOURS = float(os.environ.get('SKIP_TIMEOUT_HOURS', '0.083'))  # 5 minut pro testing

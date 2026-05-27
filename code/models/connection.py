@@ -56,6 +56,22 @@ class Connection:
         ''', u1=user1_id, u2=user2_id)
 
     @staticmethod
+    def skip(sender_id: str, receiver_id: str):
+        """Vytvoř SKIP vztah s timestamp (přeskočený profil)"""
+        db = get_db()
+        try:
+            result = db.execute('''
+                MATCH (sender:User {id: $sender_id})
+                MATCH (receiver:User {id: $receiver_id})
+                CREATE (sender)-[:SKIP {created_at: datetime()}]->(receiver)
+                RETURN receiver.id as id
+            ''', sender_id=sender_id, receiver_id=receiver_id)
+            return result[0] if result else None
+        except Exception as e:
+            print(f"Error creating skip: {e}")
+            return None
+
+    @staticmethod
     def get_all_for_user(user_id: str):
         """Vrať všechny kontakty (likes) pro uživatele"""
         db = get_db()
