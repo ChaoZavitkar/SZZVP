@@ -1,6 +1,6 @@
 """Discovery routy - procházení a lajkování profilů"""
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models.database import get_db
 from models.connection import Connection
 from models.profile import Profile
@@ -21,7 +21,7 @@ def discover():
 
     db = get_db()
 
-    # Základní dotaz - najdi všechny dostupné profily
+    # Základní dotaz - najdi dostupné profily
     query = '''
         MATCH (user:User {id: $user_id})
         MATCH (other:User)-[:HAS_PROFILE]->(profile:Profile)
@@ -38,7 +38,7 @@ def discover():
         'max_nerd': max_nerd
     }
 
-    # Filtr podle zájmů - pokud jsou vybrány, profil MUSÍ mít aspoň jeden z nich
+    # Filtr podle zájmů
     if interests:
         query += '''
         MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
@@ -46,30 +46,16 @@ def discover():
         '''
         params['interests'] = interests
 
-    # Vyloučit profily, které si UŽIVATEL LIŽ INICIJOVAL like
-    # (tj. kde user inicioval connection)
-    # Pokud si jiný user lajkl THIS usera, stále by měl vidět ten profil
+    # Vyloučit profily, která už jsem si lajknul
     query += '''
-        OPTIONAL MATCH (user)-[:INITIATED_CONNECTION]->(conn:Connection)
-        WHERE conn.is_deleted = false
-        WITH profile, other, collect(DISTINCT conn) as user_initiated_conns
+        OPTIONAL MATCH (user)-[likes_rel:LIKES]->(other)
+        WITH profile, other, likes_rel
+        WHERE likes_rel IS NULL
 
-        // Filtruj jen konekce kde user inicioval
-        WITH profile, other,
-             [c IN user_initiated_conns WHERE c IS NOT NULL] as initiated_connections
-
-        // Najdi konekce mezi user a other (obě strany)
-        OPTIONAL MATCH (user)-[:INITIATED_CONNECTION]->(initiated:Connection)<-[:RECEIVED_CONNECTION]-(other)
-        WHERE initiated.is_deleted = false
-
-        WITH profile, other, initiated
-        WHERE initiated IS NULL  // Vyloučit jen ty, kde USER inicioval
-
-        // Nyní vezmi všechny zájmy a technologie profilu
         OPTIONAL MATCH (profile)-[:INTERESTED_IN]->(interest:InterestCategory)
         OPTIONAL MATCH (profile)-[:LIKES_TECHNOLOGY]->(tech:Technology)
 
-        RETURN other.id as user_id,
+        RETURN DISTINCT other.id as user_id,
                profile.nickname as nickname,
                profile.bio as bio,
                profile.nerd_level as nerd_level,
@@ -102,14 +88,13 @@ def like_profile(target_user_id):
         flash("❌ Nemůžete si lajkovat sami sebe", "error")
         return redirect(url_for('discover.discover'))
 
-    # Vytvoř konekci
+    # Vytvoř LIKES vztah
     connection = Connection.create(user_id, target_user_id)
     if connection:
         flash("❤️ Profil se ti líbí!", "success")
     else:
         flash("❌ Chyba při uložení", "error")
 
-    # Vrať se na discover
     return redirect(url_for('discover.discover'))
 
 @discover_bp.route('/discover/skip/<target_user_id>', methods=['POST'])
@@ -119,5 +104,4 @@ def skip_profile(target_user_id):
     if not user_id:
         return redirect(url_for('auth.login'))
 
-    # Prostě vrať na discover - zobrazí se další profil
     return redirect(url_for('discover.discover'))

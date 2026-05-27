@@ -741,6 +741,58 @@ Werkzeug==3.0.1                     # WSGI utilities
 
 ---
 
+# 🐛 Opravené chyby
+
+## Bug #1: Duplikování kontaktů v seznamu
+**Problem:** Při lajkování někoho se obsah duplikoval v seznamu matchů.  
+**Příčina:** Dotaz v `contacts.py` používal `UNION` což mohlo vrátit stejné Connection ID vícekrát.  
+**Řešení:** Změněn dotaz na jediný `MATCH` s `CASE` statement pro rozlišení, zda uživatel inicioval nebo přijal konekci. Výsledky deduplikovány s `DISTINCT`.
+
+**Kod - DŘÍV:**
+```cypher
+MATCH (u1:User)-[:INITIATED_CONNECTION]->(conn:Connection)<-[:RECEIVED_CONNECTION]-(u2:User)
+WHERE ... AND u1.id = user.id
+-- UNION
+MATCH (u1:User)-[:INITIATED_CONNECTION]->(conn:Connection)<-[:RECEIVED_CONNECTION]-(u2:User)
+WHERE ... AND u2.id = user.id
+```
+
+**NYNÍ:**
+```cypher
+MATCH (u1:User)-[:INITIATED_CONNECTION]->(conn:Connection)<-[:RECEIVED_CONNECTION]-(u2:User)
+WHERE conn.is_deleted = false
+AND (u1.id = user.id OR u2.id = user.id)
+
+WITH user, conn, u1, u2,
+     CASE WHEN u1.id = user.id THEN 'initiated' ELSE 'received' END as initiated_by
+
+RETURN DISTINCT conn.id, ...
+```
+
+## Bug #2: Chyba v Connection.create() - Detekce mutual like
+**Problem:** Matchování nefungovalo - když si dva uživatelé lajkli navzájem, je_match se nenastavil na true.  
+**Příčina:** Cypher query v metodě `Connection.create()` používala nesprávnou syntaxi pro matching vztahů. Bez směrových šipek se vztahy nespárují správně.
+
+**Kod - DŘÍV (řádky 27-36 v connection.py):**
+```cypher
+OPTIONAL MATCH (conn2:Connection)
+WHERE (conn2)-[:INITIATED_CONNECTION]-(receiver)  # ❌ Chybná syntax
+AND (conn2)-[:RECEIVED_CONNECTION]-(sender)
+```
+
+**NYNÍ:**
+```cypher
+OPTIONAL MATCH (receiver)-[:INITIATED_CONNECTION]->(conn2:Connection)<-[:RECEIVED_CONNECTION]-(sender)
+WHERE conn2.is_match = false AND conn2.is_deleted = false
+```
+
+## Bug #3: Discovery filtrování - Viditelnost profilů
+**Problem:** V "Objevuj" se někdy profilům lidí, kteří si líbíte, nezobrazily.  
+**Příčina:** Dotaz vyloučil **VŠECHNY** konekce, i když měl vyloučit jen ty, které uživatel inicioval.  
+**Řešení:** Změněno filtrování - nyní vyloučí jen `INITIATED_CONNECTION` (lajky, které uživatel dal). Ponechá viditelné profily těch, kdo uživatele lajkli.
+
+---
+
 # 📊 Git Commits
 
 ```
